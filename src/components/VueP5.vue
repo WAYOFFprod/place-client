@@ -31,12 +31,22 @@ export default {
         t.$emit('draw', p5);
       }
 
-      p5.mouseClicked = () => {
-        t.$emit('mouseClicked', p5);
+      p5.mousePressed = () => {
+        t.$emit('mousePressed', p5);
+      }
+
+      p5.mouseReleased = () => {
+        t.$emit('mouseReleased', p5);
       }
 
       p5.keyReleased = () => {
         t.$emit('keyReleased', p5);
+      }
+      window.addEventListener("wheel", function(e) {
+        t.$emit('scroll', e);
+      });
+      p5.mouseDragged = () => {
+        t.$emit('mouseDragged', p5);
       }
     }
     // NOTE: Use p5 as an instance mode

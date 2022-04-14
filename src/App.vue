@@ -17,5 +17,6 @@ export default {
 #app {
   widows: 100%;
   height: 100%;
+  overflow: none;
 }
 </style>
