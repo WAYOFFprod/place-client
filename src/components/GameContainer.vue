@@ -14,6 +14,10 @@
       <div class="center-block scroll-container">
         <ColorSelector class="swatch-container" @selectedColor="changeColor" />
       </div>
+      <Login 
+        ref="loginModal"
+      />
+      <VueAxios ref="axios" />
     </div>
   </div>
 </template>
@@ -21,18 +25,25 @@
 <script>
 import VueP5 from './VueP5.vue';
 import ColorSelector from './ColorSelector.vue';
-import { HTTP } from './common/http-common';
-import axios from 'axios';
+//mport VueAxios from './VueAxios.vue'
+import { store } from './../store.js'
+import Login from './Login.vue';
+import VueAxios from './common/http-common';
+//import axios from 'axios';
 
 export default {
   name: "game",
+  mixins: [VueAxios],
   components: {
     VueP5,
-    ColorSelector
+    ColorSelector,
+    VueAxios,
+    Login
   },
   mounted() {
+    this.$refs.loginModal.toggleShowModal()
     this.$refs.p5vue.loading()
-    HTTP
+    this.HTTP
       .get('pixels')
       .then(response => {
         this.pixels = response.data
@@ -124,7 +135,6 @@ export default {
       let s = 1 / this.lg.speed
       p5.background(255);
       
-      console.log(s, this.lg.speed);
       for(let x = 0; x < this.lg.size + 1; x++) {
         let move =  p5.sin(this.lg.a + (x * this.lg.delay)) * this.lg.amp
         p5.line(this.lg.x.min + (x * this.s), move + this.lg.y.min, this.lg.x.min + (x * this.s), move + this.lg.y.max);
@@ -226,12 +236,11 @@ export default {
       bodyFormData.append('x', x / this.s)
       bodyFormData.append('y', y / this.s)
       bodyFormData.append('color', this.rgbToHex(this.c.levels))
-      axios({
-        method: "post",
-        url: "http://"+process.env.VUE_APP_WEBSOCKET_SERVER+":8001/api/pixels/add",
-        data: bodyFormData,
-        headers: { "Content-Type": "multipart/form-data" },
-      })
+      this.HTTP
+        .post('pixels/add', bodyFormData, { headers: {"Authorization" : 'Bearer ' + store.token} })
+        .then(response => {
+          console.log(response)
+        })
     },
     rgbToHex(c) {
       return "#" + this.componentToHex(c[0]) + this.componentToHex(c[1]) + this.componentToHex(c[2])

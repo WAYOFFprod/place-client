@@ -42,24 +42,32 @@ export default {
         }  
       }
 
-      p5.mousePressed = () => {
-        t.$emit('mousePressed', p5);
+      p5.mousePressed = (e) => {
+        if(e.path[0].classList.contains('p5Canvas')) { // only pass event if scroll is on top of canvas
+          t.$emit('mousePressed', p5);
+        }
       }
 
-      p5.mouseReleased = () => {
-        t.$emit('mouseReleased', p5);
+      p5.mouseReleased = (e) => {
+        if(e.path[0].classList.contains('p5Canvas')) { // only pass event if scroll is on top of canvas
+          t.$emit('mouseReleased', p5);
+        }
       }
 
-      p5.keyReleased = () => {
-        t.$emit('keyReleased', p5);
+      p5.keyReleased = (e) => {
+        if(e.path[0].classList.contains('p5Canvas')) { // only pass event if scroll is on top of canvas
+          t.$emit('keyReleased', p5);
+        }
       }
       window.addEventListener("wheel", function(e) {
         if(e.path[0].classList.contains('p5Canvas')) { // only pass event if scroll is on top of canvas
           t.$emit('scroll', e); 
         }
       });
-      p5.mouseDragged = () => {
-        t.$emit('mouseDragged', p5);
+      p5.mouseDragged = (e) => {
+        if(e.path[0].classList.contains('p5Canvas')) { // only pass event if scroll is on top of canvas
+          t.$emit('mouseDragged', p5);
+        }
       }
     }
     // NOTE: Use p5 as an instance mode

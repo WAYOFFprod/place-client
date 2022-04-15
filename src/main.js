@@ -13,3 +13,4 @@ window.Echo = new Echo({
 })
 
 createApp(App).mount('#app')
+
