@@ -66,6 +66,10 @@ export default {
         x: 0,
         y: 0
       },
+      screenOffset: {
+        x: 0,
+        y: 0,
+      },
       screenMove: {
         x: 0,
         y: 0
@@ -97,15 +101,14 @@ export default {
     draw (p5) {
       //drag canvas
       if(this.mouseDown) {
+        // store the offset and divide by the scale factor to keep constant speed while dragging 
         this.screenOff.x = (p5.mouseX - this.grab.x)  / this.sf
         this.screenOff.y = (p5.mouseY - this.grab.y) / this.sf
       }
       let sfChange = this.sf - this.oldSf
-      let tx = this.screenOff.x
-      let ty = this.screenOff.y
-      let offCenterX = tx - ((-tx + this.center.x) * sfChange)
-      let offCenterY = ty - ((-ty + this.center.y) * sfChange)
-      p5.translate(offCenterX, offCenterY)
+      this.screenOffset.x = this.screenOff.x - ((-this.screenOff.x + this.center.x) * sfChange)
+      this.screenOffset.y = this.screenOff.y - ((-this.screenOff.y + this.center.y) * sfChange)
+      p5.translate(this.screenOffset.x, this.screenOffset.y)
       p5.scale(this.sf);
 
       // draw grid
@@ -135,8 +138,10 @@ export default {
       }
     },
     mousePressed (p5) {
-      this.grab.x = p5.mouseX - this.screenOff.x * this.sf
-      this.grab.y = p5.mouseY - this.screenOff.y * this.sf
+      // when mouse pressed
+      // store the position of the initial grab and multiply the offset by the scale factore (to noralize?)
+      this.grab.x = p5.mouseX - (this.screenOff.x * this.sf)
+      this.grab.y = p5.mouseY - (this.screenOff.y * this.sf)
       this.screenMove.x = p5.mouseX;
       this.screenMove.y = p5.mouseY;
       this.mouseDown = true
@@ -147,10 +152,15 @@ export default {
       let ogVector = p5.createVector(p5.mouseX, p5.mouseY)
       //console.log(dragVector.x, ogVector.x, dragVector.dist(ogVector))
       if(dragVector.dist(ogVector) < 5) {
-        let ratioX = (p5.mouseX - this.screenOff.x) / this.sf
-        let ratioY = (p5.mouseY - this.screenOff.y) / this.sf
+        let adMouseX = p5.mouseX 
+        let adMouseY = p5.mouseY
+
+        let ratioX = (adMouseX - this.screenOffset.x)/ this.sf
+        let ratioY = (adMouseY - this.screenOffset.y)/ this.sf
+
         let gridX = (ratioX - (ratioX % this.s))
         let gridY = (ratioY - (ratioY % this.s))
+        console.log(this.sf, p5.mouseX,adMouseX, this.grab.x,this.grab.offX,  ratioX, gridX)
         if(gridX < 0 || gridX > this.screen.x || gridY < 0 || gridY > this.screen.y) {
           return;
         } else {
