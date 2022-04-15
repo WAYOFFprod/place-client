@@ -1,4 +1,7 @@
 # p5-place
+This is inspired by the reddit game called place.
+This repo is for the client side of the solution. You will need a backend in order to make it work.
+##
 
 ## Project setup
 ```
@@ -20,5 +23,8 @@ npm run build
 npm run lint
 ```
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+### env file
+```
+VUE_APP_WEBSOCKET_KEY='websocket-unique-key'
+VUE_APP_WEBSOCKET_SERVER='ip.of.websocket.server'
+```
