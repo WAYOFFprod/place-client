@@ -14,7 +14,7 @@
       <div class="center-block scroll-container">
         <ColorSelector class="swatch-container" @selectedColor="changeColor" />
       </div>
-      <Login 
+      <Login
         ref="loginModal"
       />
       <VueAxios ref="axios" />
@@ -41,7 +41,9 @@ export default {
     Login
   },
   mounted() {
-    this.$refs.loginModal.toggleShowModal()
+    if(!this.hasToken) {
+      this.$refs.loginModal.toggleShowModal()
+    }
     this.$refs.p5vue.loading()
     this.HTTP
       .get('pixels')
@@ -57,6 +59,7 @@ export default {
   },
   data () {
     return {
+      store,
       grab: {
         x: 0,
         y: 0,
@@ -251,6 +254,9 @@ export default {
     }
   },
   computed: {
+    hasToken() {
+      return store.token != ''
+    },
     gridXX () {
       return this.screen.x / this.s
     } ,

@@ -10,7 +10,7 @@ export default {
     }
   },
   mounted() {
-    const t = this
+    let t = this
     this.HTTP = axios.create({
       baseURL: 'http://'+process.env.VUE_APP_WEBSOCKET_SERVER+':8001/api/',
       headers: {

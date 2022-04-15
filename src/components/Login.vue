@@ -45,6 +45,7 @@ export default {
   },
   data () {
     return {
+      store,
       message: null,
       showModal: false,
       formValue: {
@@ -86,7 +87,7 @@ export default {
       this.HTTP
         .post('login', bodyFormData)
         .then(response => {
-          store.setToken(response.data.access_token)
+          this.store.setToken(response.data.access_token)
           this.showModal = false
         })
         .catch(error => {
