@@ -124,7 +124,8 @@ export default {
       for(var y = 0; y < this.screen.y / this.s ;y++) {
         p5.line(0, y * this.s, this.screen.y, y * this.s);
       }
-
+      const bb = this.boundingBox
+      console.log(bb);
       // draw points
       for (const key in this.pixels) {
         if (Object.hasOwnProperty.call(this.pixels, key)) {
@@ -133,7 +134,10 @@ export default {
           const x = key % this.gridXX;
           const y = Math.floor(key / this.gridXX);
 
-          this.drawPixel(p5, x * this.s, + y * this.s, element)
+          // only render if in bounding box
+          if(bb.l < x && bb.r > x && bb.t < y && bb.b > y) {
+            this.drawPixel(p5, x * this.s, + y * this.s, element)
+          }
         }
       }
     },
@@ -152,15 +156,12 @@ export default {
       let ogVector = p5.createVector(p5.mouseX, p5.mouseY)
       //console.log(dragVector.x, ogVector.x, dragVector.dist(ogVector))
       if(dragVector.dist(ogVector) < 5) {
-        let adMouseX = p5.mouseX 
-        let adMouseY = p5.mouseY
 
-        let ratioX = (adMouseX - this.screenOffset.x)/ this.sf
-        let ratioY = (adMouseY - this.screenOffset.y)/ this.sf
+        let ratioX = (p5.mouseX - this.screenOffset.x)/ this.sf
+        let ratioY = (p5.mouseY - this.screenOffset.y)/ this.sf
 
         let gridX = (ratioX - (ratioX % this.s))
         let gridY = (ratioY - (ratioY % this.s))
-        console.log(this.sf, p5.mouseX,adMouseX, this.grab.x,this.grab.offX,  ratioX, gridX)
         if(gridX < 0 || gridX > this.screen.x || gridY < 0 || gridY > this.screen.y) {
           return;
         } else {
@@ -199,7 +200,7 @@ export default {
     componentToHex(c) {
       var hex = c.toString(16);
       return hex.length == 1 ? "0" + hex : hex;
-    },
+    }
   },
   computed: {
     gridXX () {
@@ -207,6 +208,18 @@ export default {
     } ,
     gridYY () {
       return this.screen.y / this.s
+    },
+    boundingBox() {
+      const offX = -this.screenOffset.x / this.sf
+      const offY = -this.screenOffset.y / this.sf
+      const offDiffX = (this.center.x*2 - this.screenOffset.x) / this.sf
+      const offDiffY = (this.center.y*2 - this.screenOffset.y) / this.sf
+      return {
+        l: (offX / this.s) - 1,
+        r: (offDiffX / this.s) + 1,
+        t: (offY / this.s) - 1,
+        b: (offDiffY / this.s) + 1,
+      }
     }
   }
 }
