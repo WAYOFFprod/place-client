@@ -1,5 +1,5 @@
 <template>
-  <div id="p5-canvas"></div>
+  <div id="p5-canvas" class="p5-canvas"></div>
 </template>
 
 <script>
@@ -10,12 +10,18 @@ export default {
   data () {
     return {
       color: [0, 255, 0],
-      p5: null
+      p5: null,
+      isLoading: true
     }
   },
   methods: {
-    something() {
-      this.$emit('something', this.p5);
+    loading() {
+      console.log("loading")
+      this.isLoading = true;
+    },
+    finishedLoading() {
+      this.isLoading = false
+      console.log("finished loading")
     }
   },
   mounted() {   
@@ -27,8 +33,13 @@ export default {
         t.$emit('setup', p5);  
       }     
       // NOTE: Draw is here
-      p5.draw = () => {    
-        t.$emit('draw', p5);
+      p5.draw = () => { 
+        
+        if(t.isLoading) {
+          t.$emit('loading', p5);
+        } else {
+          t.$emit('draw', p5);
+        }  
       }
 
       p5.mousePressed = () => {
@@ -43,7 +54,9 @@ export default {
         t.$emit('keyReleased', p5);
       }
       window.addEventListener("wheel", function(e) {
-        t.$emit('scroll', e);
+        if(e.path[0].classList.contains('p5Canvas')) { // only pass event if scroll is on top of canvas
+          t.$emit('scroll', e); 
+        }
       });
       p5.mouseDragged = () => {
         t.$emit('mouseDragged', p5);

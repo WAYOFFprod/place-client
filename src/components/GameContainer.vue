@@ -5,13 +5,15 @@
         class="center-block"
         @setup="setup" 
         @draw="draw"
+        @loading="drawLoading"
         @mousePressed="mousePressed"
         @mouseReleased="mouseReleased"
         @keyReleased="keyReleased"
-        @something="something"
         @scroll="scroll"
       />
-      <ColorSelector class="center-block" @selectedColor="changeColor" />
+      <div class="center-block scroll-container">
+        <ColorSelector class="swatch-container" @selectedColor="changeColor" />
+      </div>
     </div>
   </div>
 </template>
@@ -29,10 +31,12 @@ export default {
     ColorSelector
   },
   mounted() {
+    this.$refs.p5vue.loading()
     HTTP
       .get('pixels')
       .then(response => {
-        this.pixels = response.data;
+        this.pixels = response.data
+        this.$refs.p5vue.finishedLoading()
       })
 
     window.Echo.channel("pixel-change").listen('PixelEvent', (e) => {
@@ -50,18 +54,10 @@ export default {
       },
       pixels: [],
       speed: 2,
-      posX: 0,
       screen: {
         x: 1000 * 20,
         y: 1000 * 20
       },
-      s: 20,
-      c: null,
-      hexC: "#ffffff",
-      echo: null,
-      sf: 1,
-      oldSf: 1,
-      mouseDown: false,
       screenOff: {
         x: 0,
         y: 0
@@ -74,20 +70,37 @@ export default {
         x: 0,
         y: 0
       },
+      s: 20,
+      c: null,
+      hexC: "#ffffff",
+      echo: null,
+      sf: 1,
+      oldSf: 1,
+      mouseDown: false,
       center: {
         x: 0,
         y: 0
+      },
+      lg: { // loading grid
+        x: { // positining of vertical lines
+          min: 0,
+          max: 0
+        },
+        y: { // positining of horizontal lines
+          min: 0,
+          max: 0
+        },
+        size: 4, // size of grid
+        a: 0.0, // progress in animation
+        speed: 0.01, // animation speed
+        delay: 0.2, // delay between lines
+        amp: 5 // amplitude of oscilation
       }
     }
   },
   methods: {
     changeColor(c) {
       this.hexC = c
-    },
-    something(p5) {
-      this.c = p5.color(this.hexC)
-      p5.fill(this.c)
-      p5.square(0, 0, this.s)
     },
     setup(p5) {
       // p5.rectMode(p5.CENTER);
@@ -97,6 +110,33 @@ export default {
       p5.resizeCanvas(p5.windowWidth,p5.windowHeight - 100)
       this.center.x = p5.windowWidth / 2;
       this.center.y = (p5.windowHeight - 100) / 2;
+
+      let sgs = this.s * this.lg.size / 2
+      this.lg.x.min = this.center.x - sgs
+      this.lg.x.max = this.center.x + sgs
+      this.lg.y.min = this.center.y - sgs
+      this.lg.y.max = this.center.y + sgs
+
+      this.lg.a = 0.0;
+    },
+    // Draw and animate the loading screen
+    drawLoading(p5) {
+      let s = 1 / this.lg.speed
+      p5.background(255);
+      
+      console.log(s, this.lg.speed);
+      for(let x = 0; x < this.lg.size + 1; x++) {
+        let move =  p5.sin(this.lg.a + (x * this.lg.delay)) * this.lg.amp
+        p5.line(this.lg.x.min + (x * this.s), move + this.lg.y.min, this.lg.x.min + (x * this.s), move + this.lg.y.max);
+      }
+      for(let y = 0; y < this.lg.size + 1;y++) {
+        let move =  p5.sin(this.lg.a + (y * this.lg.delay)) * this.lg.amp
+        p5.line(move + this.lg.x.min,this.lg.y.min + + (y * this.s), move + this.lg.x.max, this.lg.y.min + (y * this.s));
+      }
+      this.lg.a += p5.TWO_PI / s
+
+      p5.textSize(24);
+      p5.text('loading', this.center.x - 38, this.center.y + 80);
     },
     draw (p5) {
       //drag canvas
@@ -118,14 +158,13 @@ export default {
 
       p5.stroke(220)
       p5.strokeWeight(1)
-      for(var x = 0; x < this.screen.x / this.s ;x++) {
+      for(let x = 0; x < this.screen.x / this.s ;x++) {
         p5.line(x * this.s, 0, x * this.s, this.screen.y);
       }
-      for(var y = 0; y < this.screen.y / this.s ;y++) {
+      for(let y = 0; y < this.screen.y / this.s ;y++) {
         p5.line(0, y * this.s, this.screen.y, y * this.s);
       }
       const bb = this.boundingBox
-      console.log(bb);
       // draw points
       for (const key in this.pixels) {
         if (Object.hasOwnProperty.call(this.pixels, key)) {
@@ -172,9 +211,9 @@ export default {
     },
     scroll(e) {
       if (e.deltaY > 0) {
-        this.sf *= 1.04;
+        this.sf *= 1.05;
       } else {
-        this.sf *= 0.96;
+        this.sf *= 0.95;
       }
     },
     drawPixel(p5, x,y, c) {
@@ -231,6 +270,14 @@ export default {
   display: flex;
   flex-direction: row;
 }
+.scroll-container {
+  height: 100px;
+  overflow: scroll;
+}
+.swatch-container {
+  display: flex;
+  flex-wrap: wrap;
+}
 .center{
  justify-content: center;
 }
@@ -243,7 +290,6 @@ export default {
 }
 .center-block {
   max-width: 100%;
-  flex-wrap: wrap;
 }
 body {
   margin: 0;
