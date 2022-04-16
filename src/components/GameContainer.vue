@@ -10,9 +10,10 @@
         @mouseReleased="mouseReleased"
         @scroll="scroll"
       />
-      <button class="static-button" @click="toggledrawer">
-        
-      </button>
+      <div v-if="store.isFinishedConnecting" class="static-container">
+        <span class=" static-label">{{ buttonLabel }}</span>
+        <button class="static-button" @click="toggledrawer"></button>
+      </div>
     </n-layout-content>
     <n-drawer v-model:show="active" :width="502" placement="bottom">
       <n-drawer-content title="Colors">
@@ -312,6 +313,15 @@ export default {
         t: (offY / this.s) - 1,
         b: (offDiffY / this.s) + 1,
       }
+    },
+    buttonLabel() {
+      if(store.isLoggedIn) {
+        return "COLORS ->"
+      } else {
+        {
+        return "LOGIN/REGISTER ->"
+      }
+      }
     }
   }
 }
@@ -344,10 +354,17 @@ export default {
 .center-block {
   max-width: 100%;
 }
-.static-button {
+.static-container {
   position: fixed;
   bottom: 10px;
   right: 10px;
+  width: 250px;
+  height: 40px;
+  display: flex;
+  gap: 10px;
+  justify-content: right;
+}
+.static-button {
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -360,6 +377,12 @@ export default {
   display: inline-block;
   font-size: 16px;
   margin: 4px 2px;
+}
+.static-label {
+  color: #000000;
+  text-align: center;
+  line-height: 44px;
+  font-size: 20px;
 }
 body {
   margin: 0;
