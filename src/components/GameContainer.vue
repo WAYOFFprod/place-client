@@ -1,6 +1,6 @@
 <template>
-  <div id="game-container" class="center">
-    <div class="center-container">
+  <n-layout>
+    <n-layout-content content-style="padding: 0px;">
       <VueP5 ref="p5vue"
         class="center-block"
         @setup="setup" 
@@ -10,7 +10,12 @@
         @mouseReleased="mouseReleased"
         @scroll="scroll"
       />
-      <div class="center-block scroll-container">
+      <button class="static-button" @click="toggledrawer">
+        
+      </button>
+    </n-layout-content>
+    <n-drawer v-model:show="active" :width="502" placement="bottom">
+      <n-drawer-content title="Colors">
         <StartMenu 
           v-if="!store.isLoggedIn && store.isFinishedConnecting"
           @openRegistration="openRegistration"
@@ -19,12 +24,15 @@
           v-if="store.isLoggedIn"
           class="swatch-container"
           @selectedColor="changeColor" />
-      </div>
-      <LoginModal
+      </n-drawer-content>
+    </n-drawer>
+    <n-layout-footer>
+      
+    </n-layout-footer>
+    <LoginModal
         ref="loginModal"
       />
-    </div>
-  </div>
+  </n-layout>
 </template>
 
 <script>
@@ -35,6 +43,7 @@ import StartMenu from './StartMenu.vue'
 import { store } from './../store.js'
 import LoginModal from './LoginModal.vue'
 import VueAxios from './common/http-common'
+import {NLayout, NLayoutContent, NLayoutFooter, NDrawerContent, NDrawer} from 'naive-ui'
 import {useMessage} from 'naive-ui'
 //import axios from 'axios';
 
@@ -46,6 +55,11 @@ export default {
     ColorSelector,
     StartMenu,
     LoginModal,
+    NLayout,
+    NLayoutContent,
+    NLayoutFooter,
+    NDrawerContent,
+    NDrawer,
   },
   mounted() {
     this.$refs.p5vue.loading()
@@ -114,10 +128,14 @@ export default {
         delay: 0.2, // delay between lines
         amp: 5 // amplitude of oscilation
       },
-      message: useMessage()
+      message: useMessage(),
+      active: false, //drawer
     }
   },
   methods: {
+    toggledrawer() {
+      this.active = !this.active;
+    },
     changeColor(c) {
       this.hexC = c
     },
@@ -126,9 +144,9 @@ export default {
       this.c = p5.color('#ffffff')
       
       this.canvas = p5.createCanvas(p5.windowWidth, p5.windowHeight);
-      p5.resizeCanvas(p5.windowWidth,p5.windowHeight - 100)
+      p5.resizeCanvas(p5.windowWidth,p5.windowHeight)
       this.center.x = p5.windowWidth / 2;
-      this.center.y = (p5.windowHeight - 100) / 2;
+      this.center.y = (p5.windowHeight) / 2;
 
       let sgs = this.s * this.lg.size / 2
       this.lg.x.min = this.center.x - sgs
@@ -325,6 +343,23 @@ export default {
 }
 .center-block {
   max-width: 100%;
+}
+.static-button {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #000000;
+  border: none;
+  color: white;
+  padding: 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
 }
 body {
   margin: 0;

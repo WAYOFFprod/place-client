@@ -1,5 +1,5 @@
 <template>
-  <n-badge :value="value" :max="15">
+  <n-badge :max="15">
     <n-button class="swatch" :color="color" :ghost="isDisabled" @click="click">
       <n-avatar
         :style="{
@@ -11,13 +11,14 @@
 </template>
 
 <script>
-import {NButton, NAvatar} from 'naive-ui'
+import {NBadge, NButton, NAvatar} from 'naive-ui'
 
 export default {
   props: ['color', 'isDisabled'],
   components: {
     NButton,
-    NAvatar
+    NAvatar,
+    NBadge
   },
   data() {
     return {
