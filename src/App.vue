@@ -1,14 +1,21 @@
 <template>
-  <GameContainer />
+  <n-dialog-provider>
+    <n-message-provider>
+      <GameContainer />
+  </n-message-provider>
+  </n-dialog-provider>
 </template>
 
 <script>
 import GameContainer from './components/GameContainer.vue'
+import {NMessageProvider, NDialogProvider} from 'naive-ui'
 
 export default {
   name: 'App',
   components: {
-    GameContainer
+    GameContainer,
+    NMessageProvider,
+    NDialogProvider
   }
 }
 </script>

@@ -1,45 +1,41 @@
 <template>
-  <n-dialog-provider>
-    <n-message-provider>
-      <div id="game-container" class="center">
-        <div class="center-container">
-          <VueP5 ref="p5vue"
-            class="center-block"
-            @setup="setup" 
-            @draw="draw"
-            @loading="drawLoading"
-            @mousePressed="mousePressed"
-            @mouseReleased="mouseReleased"
-            @scroll="scroll"
-          />
-          <div class="center-block scroll-container">
-            <StartMenu 
-              v-if="!store.isLoggedIn && store.isFinishedConnecting"
-              @openRegistration="openRegistration"
-              @openLogin="openLogin"/>
-            <ColorSelector
-              v-if="store.isLoggedIn"
-              class="swatch-container"
-              @selectedColor="changeColor" />
-          </div>
-          <LoginModal
-            ref="loginModal"
-          />
-        </div>
+  <div id="game-container" class="center">
+    <div class="center-container">
+      <VueP5 ref="p5vue"
+        class="center-block"
+        @setup="setup" 
+        @draw="draw"
+        @loading="drawLoading"
+        @mousePressed="mousePressed"
+        @mouseReleased="mouseReleased"
+        @scroll="scroll"
+      />
+      <div class="center-block scroll-container">
+        <StartMenu 
+          v-if="!store.isLoggedIn && store.isFinishedConnecting"
+          @openRegistration="openRegistration"
+          @openLogin="openLogin"/>
+        <ColorSelector
+          v-if="store.isLoggedIn"
+          class="swatch-container"
+          @selectedColor="changeColor" />
       </div>
-    </n-message-provider>
-  </n-dialog-provider>
+      <LoginModal
+        ref="loginModal"
+      />
+    </div>
+  </div>
 </template>
 
 <script>
-import VueP5 from './VueP5.vue';
-import ColorSelector from './ColorSelector.vue';
+import VueP5 from './VueP5.vue'
+import ColorSelector from './ColorSelector.vue'
 import StartMenu from './StartMenu.vue'
 //mport VueAxios from './VueAxios.vue'
 import { store } from './../store.js'
-import LoginModal from './LoginModal.vue';
-import VueAxios from './common/http-common';
-import {NMessageProvider, NDialogProvider} from 'naive-ui'; 
+import LoginModal from './LoginModal.vue'
+import VueAxios from './common/http-common'
+import {useMessage} from 'naive-ui'
 //import axios from 'axios';
 
 export default {
@@ -50,8 +46,6 @@ export default {
     ColorSelector,
     StartMenu,
     LoginModal,
-    NMessageProvider,
-    NDialogProvider
   },
   mounted() {
     this.$refs.p5vue.loading()
@@ -120,6 +114,7 @@ export default {
         delay: 0.2, // delay between lines
         amp: 5 // amplitude of oscilation
       },
+      message: useMessage()
     }
   },
   methods: {
@@ -218,6 +213,15 @@ export default {
       let ogVector = p5.createVector(p5.mouseX, p5.mouseY)
       //console.log(dragVector.x, ogVector.x, dragVector.dist(ogVector))
       if(dragVector.dist(ogVector) < 5) {
+        if(store.token == '') {
+          this.message.info(
+              'Login or Register to place points',
+              {
+                keepAliveOnHover: true
+              }
+            )
+          return
+        }
 
         let ratioX = (p5.mouseX - this.screenOffset.x)/ this.sf
         let ratioY = (p5.mouseY - this.screenOffset.y)/ this.sf
