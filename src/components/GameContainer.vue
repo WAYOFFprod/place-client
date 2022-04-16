@@ -10,9 +10,12 @@
         @mouseReleased="mouseReleased"
         @scroll="scroll"
       />
-      <div v-if="store.isFinishedConnecting" class="static-container">
-        <span class=" static-label">{{ buttonLabel }}</span>
-        <button class="static-button" @click="toggledrawer"></button>
+      <div class="static-container">
+        <n-space :size="24" align="center">
+          <n-button type="primary" @click="toggledrawer">
+            {{ buttonLabel }}
+          </n-button>
+        </n-space>
       </div>
     </n-layout-content>
     <n-drawer v-model:show="active" :width="502" placement="bottom">
@@ -44,7 +47,7 @@ import StartMenu from './StartMenu.vue'
 import { store } from './../store.js'
 import LoginModal from './LoginModal.vue'
 import VueAxios from './common/http-common'
-import {NLayout, NLayoutContent, NLayoutFooter, NDrawerContent, NDrawer} from 'naive-ui'
+import {NLayout, NLayoutContent, NLayoutFooter, NDrawerContent, NDrawer, NSpace, NButton} from 'naive-ui'
 import {useMessage} from 'naive-ui'
 //import axios from 'axios';
 
@@ -61,6 +64,8 @@ export default {
     NLayoutFooter,
     NDrawerContent,
     NDrawer,
+    NSpace,
+    NButton,
   },
   mounted() {
     this.$refs.p5vue.loading()
@@ -316,10 +321,10 @@ export default {
     },
     buttonLabel() {
       if(store.isLoggedIn) {
-        return "COLORS ->"
+        return "COLORS"
       } else {
         {
-        return "LOGIN/REGISTER ->"
+        return "LOGIN/REGISTER"
       }
       }
     }
