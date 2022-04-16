@@ -1,34 +1,45 @@
 <template>
-  <div id="game-container" class="center">
-    <div class="center-container">
-      <VueP5 ref="p5vue"
-        class="center-block"
-        @setup="setup" 
-        @draw="draw"
-        @loading="drawLoading"
-        @mousePressed="mousePressed"
-        @mouseReleased="mouseReleased"
-        @keyReleased="keyReleased"
-        @scroll="scroll"
-      />
-      <div class="center-block scroll-container">
-        <ColorSelector class="swatch-container" @selectedColor="changeColor" />
+  <n-dialog-provider>
+    <n-message-provider>
+      <div id="game-container" class="center">
+        <div class="center-container">
+          <VueP5 ref="p5vue"
+            class="center-block"
+            @setup="setup" 
+            @draw="draw"
+            @loading="drawLoading"
+            @mousePressed="mousePressed"
+            @mouseReleased="mouseReleased"
+            @scroll="scroll"
+          />
+          <div class="center-block scroll-container">
+            <StartMenu 
+              v-if="!store.isLoggedIn && store.isFinishedConnecting"
+              @openRegistration="openRegistration"
+              @openLogin="openLogin"/>
+            <ColorSelector
+              v-if="store.isLoggedIn"
+              class="swatch-container"
+              @selectedColor="changeColor" />
+          </div>
+          <LoginModal
+            ref="loginModal"
+          />
+        </div>
       </div>
-      <Login
-        ref="loginModal"
-      />
-      <VueAxios ref="axios" />
-    </div>
-  </div>
+    </n-message-provider>
+  </n-dialog-provider>
 </template>
 
 <script>
 import VueP5 from './VueP5.vue';
 import ColorSelector from './ColorSelector.vue';
+import StartMenu from './StartMenu.vue'
 //mport VueAxios from './VueAxios.vue'
 import { store } from './../store.js'
-import Login from './Login.vue';
+import LoginModal from './LoginModal.vue';
 import VueAxios from './common/http-common';
+import {NMessageProvider, NDialogProvider} from 'naive-ui'; 
 //import axios from 'axios';
 
 export default {
@@ -37,13 +48,12 @@ export default {
   components: {
     VueP5,
     ColorSelector,
-    VueAxios,
-    Login
+    StartMenu,
+    LoginModal,
+    NMessageProvider,
+    NDialogProvider
   },
   mounted() {
-    if(!this.hasToken) {
-      this.$refs.loginModal.toggleShowModal()
-    }
     this.$refs.p5vue.loading()
     this.HTTP
       .get('pixels')
@@ -109,7 +119,7 @@ export default {
         speed: 0.01, // animation speed
         delay: 0.2, // delay between lines
         amp: 5 // amplitude of oscilation
-      }
+      },
     }
   },
   methods: {
@@ -251,6 +261,12 @@ export default {
     componentToHex(c) {
       var hex = c.toString(16);
       return hex.length == 1 ? "0" + hex : hex;
+    },
+    openRegistration() {
+      this.$refs.loginModal.openRegister()
+    },
+    openLogin() {
+      this.$refs.loginModal.openLogin()
     }
   },
   computed: {

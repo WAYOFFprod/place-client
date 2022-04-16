@@ -1,5 +1,5 @@
 <template>
-  <div id="color-palette">
+  <n-space :size="3" justify="center">
     <color-swatch 
       v-for="color in colors"
       :key="color" 
@@ -7,15 +7,17 @@
       :isDisabled="color == selectedColor"
       @colorSelected="colorSelected"
     />
-  </div>
+  </n-space>
 </template>
 
 <script>
+import { NSpace } from 'naive-ui'
 import ColorSwatch from './ColorSwatch.vue'
 
 export default {
   components: {
-    ColorSwatch
+    ColorSwatch,
+    NSpace
   },
   data() {
     return {

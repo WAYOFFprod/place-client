@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import Echo from "laravel-echo";
+import 'vfonts/FiraCode.css'
 
 window.Pusher = require('pusher-js')
 window.Echo = new Echo({
