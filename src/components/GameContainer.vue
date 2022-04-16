@@ -1,5 +1,12 @@
 <template>
   <n-layout>
+    <n-drawer v-model:show="SDactive" :width="502" placement="top">
+      <n-drawer-content title="Colors">
+        <n-button @click="startScript">
+          RUN
+        </n-button>
+      </n-drawer-content>
+    </n-drawer>
     <n-layout-content content-style="padding: 0px;">
       <VueP5 ref="p5vue"
         class="center-block"
@@ -11,10 +18,16 @@
         @scroll="scroll"
       />
       <div class="static-container">
-        <n-space :size="24" align="center">
+        <n-space :size="24" align="center" v-if="store.isFinishedConnecting">
           <n-button type="primary" @click="toggledrawer">
             {{ buttonLabel }}
           </n-button>
+          <n-button v-if="store.isLoggedIn" type="primary" @click="toggleScriptDrawer">
+            SCRIPT
+          </n-button>
+          <ScriptPlayer 
+            ref="scriptPlayer"
+          />
         </n-space>
       </div>
     </n-layout-content>
@@ -43,6 +56,7 @@
 import VueP5 from './VueP5.vue'
 import ColorSelector from './ColorSelector.vue'
 import StartMenu from './StartMenu.vue'
+import ScriptPlayer from './ScriptPlayer.vue'
 //mport VueAxios from './VueAxios.vue'
 import { store } from './../store.js'
 import LoginModal from './LoginModal.vue'
@@ -59,6 +73,7 @@ export default {
     ColorSelector,
     StartMenu,
     LoginModal,
+    ScriptPlayer,
     NLayout,
     NLayoutContent,
     NLayoutFooter,
@@ -69,6 +84,7 @@ export default {
   },
   mounted() {
     this.$refs.p5vue.loading()
+    this.p5 = this.$refs.p5vue.p5
     this.HTTP
       .get('pixels')
       .then(response => {
@@ -83,6 +99,7 @@ export default {
   },
   data () {
     return {
+      p5: null,
       store,
       grab: {
         x: 0,
@@ -135,12 +152,16 @@ export default {
         amp: 5 // amplitude of oscilation
       },
       message: useMessage(),
-      active: false, //drawer
+      active: false, // color and login drawer
+      SDactive: false, // script drawer,
     }
   },
   methods: {
     toggledrawer() {
       this.active = !this.active;
+    },
+    toggleScriptDrawer() {
+      this.SDactive = !this.SDactive;
     },
     changeColor(c) {
       this.hexC = c
@@ -210,14 +231,14 @@ export default {
       // draw points
       for (const key in this.pixels) {
         if (Object.hasOwnProperty.call(this.pixels, key)) {
-          const element = this.pixels[key];
+          const color = this.pixels[key];
 
           const x = key % this.gridXX;
           const y = Math.floor(key / this.gridXX);
 
           // only render if in bounding box
           if(bb.l < x && bb.r > x && bb.t < y && bb.b > y) {
-            this.drawPixel(p5, x * this.s, + y * this.s, element)
+            this.drawPixel(p5, x * this.s, + y * this.s, color)
           }
         }
       }
@@ -272,10 +293,19 @@ export default {
       p5.fill(c)
       p5.square(x, y, this.s)
     },
-    placePixel(x, y) {
+    placePixel(x,y) {
+      x = x / this.s
+      y = y / this.s
+      this.pp(x,y)
+    },
+    spp(x,y,c) {
+      this.c = this.p5.color(c)
+      this.pp(x,y)
+    },
+    pp(x, y) {
       const bodyFormData = new FormData()
-      bodyFormData.append('x', x / this.s)
-      bodyFormData.append('y', y / this.s)
+      bodyFormData.append('x', x)
+      bodyFormData.append('y', y)
       bodyFormData.append('color', this.rgbToHex(this.c.levels))
       this.HTTP
         .post('pixels/add', bodyFormData, { headers: {"Authorization" : 'Bearer ' + store.token} })
@@ -295,7 +325,13 @@ export default {
     },
     openLogin() {
       this.$refs.loginModal.openLogin()
-    }
+    },
+    openScript() {
+
+    },
+    startScript() {
+      this.$refs.scriptPlayer.startScript();
+    },
   },
   computed: {
     hasToken() {
@@ -363,7 +399,8 @@ export default {
   position: fixed;
   bottom: 10px;
   right: 10px;
-  width: 250px;
+  top: 10px;
+  left: 10px;
   height: 40px;
   display: flex;
   gap: 10px;
