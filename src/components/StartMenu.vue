@@ -16,6 +16,7 @@
 
 <script>
 
+import  { store } from './../store.js'
 import { NButton, NSpace } from 'naive-ui'; 
 import { useMessage, useDialog } from 'naive-ui'; 
 
@@ -27,7 +28,8 @@ export default {
   data () {
     return {
       message: useMessage(),
-      dialog: useDialog()
+      dialog: useDialog(),
+      store
     }
   },
   mounted() {
@@ -36,10 +38,10 @@ export default {
   },
   methods: {
     register () {
-      this.$emit('openRegistration')
+      this.store.openRegistration()
     },
     login() {
-      this.$emit('openLogin')
+      this.store.openLogin()
     },
     handleConfirm() {
       this.dialog.warning({

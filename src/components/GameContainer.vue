@@ -11,20 +11,7 @@
         @mouseReleased="mouseReleased"
         @scroll="scroll"
       />
-      <div class="static-container">
-        <n-space :size="24" align="center" v-if="store.isFinishedConnecting">
-          <n-button type="primary" @click="store.toggledrawer">
-            {{ buttonLabel }}
-          </n-button>
-          <n-button v-if="store.isLoggedIn" type="primary" @click="store.toggleScriptDrawer">
-            SCRIPT
-          </n-button>
-          <ScriptPlayer 
-            ref="scriptPlayer"
-            @spp="spp"
-          />
-        </n-space>
-      </div>
+      <CanvasOverlay />
     </n-layout-content>
     <MenuDrawer />
     <LoginModal
@@ -35,14 +22,14 @@
 
 <script>
 import VueP5 from './VueP5.vue'
-import ScriptPlayer from './ScriptPlayer.vue'
 import ScriptDrawer from './ScriptDrawer.vue'
 import MenuDrawer from './MenuDrawer.vue'
+import CanvasOverlay from './CanvasOverlay.vue'
 //mport VueAxios from './VueAxios.vue'
 import { store } from './../store.js'
 import LoginModal from './LoginModal.vue'
 import VueAxios from './common/http-common'
-import {NLayout, NLayoutContent, NSpace, NButton} from 'naive-ui'
+import {NLayout, NLayoutContent} from 'naive-ui'
 import {useMessage} from 'naive-ui'
 //import axios from 'axios';
 
@@ -52,13 +39,11 @@ export default {
   components: {
     VueP5,
     LoginModal,
-    ScriptPlayer,
     ScriptDrawer,
     MenuDrawer,
+    CanvasOverlay,
     NLayout,
     NLayoutContent,
-    NSpace,
-    NButton,
   },
   mounted() {
     this.$refs.p5vue.loading()
@@ -321,15 +306,6 @@ export default {
         r: (offDiffX / this.s) + 1,
         t: (offY / this.s) - 1,
         b: (offDiffY / this.s) + 1,
-      }
-    },
-    buttonLabel() {
-      if(store.isLoggedIn) {
-        return "COLORS"
-      } else {
-        {
-        return "LOGIN/REGISTER"
-      }
       }
     }
   }

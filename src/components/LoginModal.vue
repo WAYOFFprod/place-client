@@ -1,6 +1,6 @@
 <template>
     <n-modal 
-      :show="showModal"
+      :show="store.isModalOpen"
       preset="dialog"
       title="Dialog"
       :mask-closable="false"
@@ -10,7 +10,7 @@
         <div>Account</div>
       </template>
         <n-form
-          v-if="isRegistered"
+          v-if="store.isRegistrationModalOpen"
           ref="formRefReg"
           :label-width="80"
           :model="formValue"
@@ -42,7 +42,7 @@
 
         
         <n-form
-          v-if="isLogin"
+          v-if="store.isLoginModalOpen"
           ref="formRef"
           :label-width="80"
           :model="formValue"
@@ -75,7 +75,7 @@
 import { NModal, NForm, NInput, NFormItemGi, NButton, NGrid} from 'naive-ui';
 import {useMessage} from 'naive-ui'
 import VueAxios from './common/http-common';
-import { store } from '../store.js'
+import { store } from './../store.js'
 const Mode = {LOGIN: 0, REGISTER: 1}
 export default {
   mixins: [VueAxios],
@@ -173,7 +173,7 @@ export default {
               keepAliveOnHover: true
             }
           )
-          this.showModal = false
+          this.store.closeModal()
         })
         .catch(error => {
           this.errorMessage.error(
@@ -200,7 +200,7 @@ export default {
               keepAliveOnHover: true
             }
           )
-          this.showModal = false
+          this.store.closeModal()
         })
         .catch(error => {
           this.errorMessage.error(

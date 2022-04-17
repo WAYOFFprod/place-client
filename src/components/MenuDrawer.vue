@@ -1,10 +1,9 @@
 <template>
-  <n-drawer v-model:show="active" :width="502" placement="bottom">
+  <n-drawer v-model:show="store.isMenuDrawerOpen" :width="502" placement="bottom">
       <n-drawer-content title="Colors">
         <StartMenu 
           v-if="!store.isLoggedIn && store.isFinishedConnecting"
-          @openRegistration="openRegistration"
-          @openLogin="openLogin"/>
+          />
         <ColorSelector
           v-if="store.isLoggedIn"
           class="swatch-container"
@@ -29,14 +28,6 @@ export default {
     return {
       store,
     }
-  },
-  methods: {
-    openLogin() {
-      this.$refs.loginModal.openLogin()
-    },
-    openRegistration() {
-      this.$refs.loginModal.openRegister()
-    },
   }
 }
 </script>

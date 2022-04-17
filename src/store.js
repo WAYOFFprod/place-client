@@ -19,5 +19,23 @@ export const store = reactive({
   toggleScriptDrawer() {
     this.isScriptDrawerOpen = !this.isScriptDrawerOpen;
   },
+  isModalOpen: false, 
+  isLoginModalOpen: false,
+  isRegistrationModalOpen: false,
+  openRegistration() {
+    this.isModalOpen = true
+    this.isLoginModalOpen = false
+    this.isRegistrationModalOpen = true
+  },
+  openLogin() {
+    this.isModalOpen = true
+    this.isLoginModalOpen = true
+    this.isRegistrationModalOpen = false
+  },
+  closeModal() {
+    this.isModalOpen = false
+    this.isLoginModalOpen = false
+    this.isRegistrationModalOpen = false
+  },
   selectedColor: ''
 })
