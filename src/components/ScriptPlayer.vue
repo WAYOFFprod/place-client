@@ -1,5 +1,24 @@
 <template>
-  <n-progress type="circle" :percentage="percentage" >
+ <n-el>
+ <n-progress
+        type="multiple-circle"
+        :stroke-width="6"
+        :circle-gap="0.5"
+        :percentage="[
+          percentage,
+          seconds
+        ]"
+        :color="[
+          'var(--info-color)',
+          'var(--success-color)',
+        ]"
+        :rail-style="[
+          { stroke: 'var(--info-color)', opacity: 0.3 },
+          { stroke: 'var(--success-color)', opacity: 0.3 },
+        ]"
+      >
+    <!-- <n-progress type="circle" :percentage="percentage" > -->
+
     <n-button type="primary" @click="toggleButton">
       {{percentage}}%
       <n-icon>
@@ -7,10 +26,11 @@
       </n-icon>
     </n-button>
   </n-progress>
+ </n-el>
 </template>
 
 <script>
-import { NProgress, NIcon, NButton} from 'naive-ui'
+import { NProgress, NIcon, NButton, NEl} from 'naive-ui'
 import Play16Regular from '@vicons/fluent/Play16Regular'
 
 export default {
@@ -19,11 +39,13 @@ export default {
     NProgress,
     NIcon,
     NButton,
+    NEl,
   },
   data () {
     return {
+      seconds: 0,
       percentage: 0, 
-      isPaused: false,
+      isPaused: true,
       isStarted: false,
     }
   },
@@ -75,21 +97,22 @@ export default {
       }
       this.isStarted = false
     },
+    async count() {
+      let lastUpdate;
+      while(this.isPaused) {
+        let now = Date.now();
+        let dt = now - lastUpdate;
+        lastUpdate = now;
+        this.seconds = this.seconds + (dt /1000)
+      }
+    },
     pauseScript() {
 
     },
     sleep(milliseconds) {
       return new Promise((resolve) => setTimeout(resolve, milliseconds));
     },
-  },
-  // watch: {
-  //   // whenever question changes, this function will run
-  //   store.(newQuestion, oldQuestion) {
-  //     if (newQuestion.indexOf('?') > -1) {
-  //       this.getAnswer()
-  //     }
-  //   }
-  // },
+  }
 }
 </script>
 

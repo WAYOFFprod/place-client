@@ -4,7 +4,7 @@
       <n-button type="primary" @click="store.toggledrawer()">
         {{ buttonLabel }}
       </n-button>
-      <n-button v-if="store.isLoggedIn" type="primary" @click="store.toggleScriptDrawer">
+      <n-button v-if="store.isLoggedIn" type="primary" @click="store.toggleScriptDrawer()">
         SCRIPT
       </n-button>
       <ScriptPlayer 

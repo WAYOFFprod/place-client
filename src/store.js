@@ -37,5 +37,6 @@ export const store = reactive({
     this.isLoginModalOpen = false
     this.isRegistrationModalOpen = false
   },
-  selectedColor: ''
+  selectedColor: '',
+  isScriptRunning: false,
 })

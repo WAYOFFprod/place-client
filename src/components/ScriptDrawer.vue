@@ -2,7 +2,7 @@
   <n-drawer v-model:show="store.isScriptDrawerOpen" :width="502" placement="top">
       <n-drawer-content title="Colors">
         <n-button @click="startScript">
-          RUN
+          {{ buttonLabel }}
         </n-button>
       </n-drawer-content>
     </n-drawer>
@@ -25,7 +25,16 @@ export default {
   },
   methods: {
     startScript() {
-
+      this.store.isScriptRunning = true
+    }
+  },
+  compute: {
+    buttonLabel() {
+      if(this.store.isScriptRunning) {
+        return "PAUSE"
+      } else {
+        return "RUN"
+      }
     }
   }
 }
