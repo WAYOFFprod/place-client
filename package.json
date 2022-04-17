@@ -18,6 +18,13 @@
     "vue-axios": "^3.4.1"
   },
   "devDependencies": {
+    "@vicons/antd": "^0.12.0",
+    "@vicons/fa": "^0.12.0",
+    "@vicons/fluent": "^0.12.0",
+    "@vicons/ionicons4": "^0.12.0",
+    "@vicons/ionicons5": "^0.12.0",
+    "@vicons/material": "^0.12.0",
+    "@vicons/tabler": "^0.12.0",
     "@vue/cli-plugin-babel": "~4.5.17",
     "@vue/cli-plugin-eslint": "~4.5.17",
     "@vue/cli-service": "~4.5.17",

@@ -1,12 +1,6 @@
 <template>
   <n-layout>
-    <n-drawer v-model:show="SDactive" :width="502" placement="top">
-      <n-drawer-content title="Colors">
-        <n-button @click="startScript">
-          RUN
-        </n-button>
-      </n-drawer-content>
-    </n-drawer>
+    <ScriptDrawer />
     <n-layout-content content-style="padding: 0px;">
       <VueP5 ref="p5vue"
         class="center-block"
@@ -19,33 +13,20 @@
       />
       <div class="static-container">
         <n-space :size="24" align="center" v-if="store.isFinishedConnecting">
-          <n-button type="primary" @click="toggledrawer">
+          <n-button type="primary" @click="store.toggledrawer">
             {{ buttonLabel }}
           </n-button>
-          <n-button v-if="store.isLoggedIn" type="primary" @click="toggleScriptDrawer">
+          <n-button v-if="store.isLoggedIn" type="primary" @click="store.toggleScriptDrawer">
             SCRIPT
           </n-button>
           <ScriptPlayer 
             ref="scriptPlayer"
+            @spp="spp"
           />
         </n-space>
       </div>
     </n-layout-content>
-    <n-drawer v-model:show="active" :width="502" placement="bottom">
-      <n-drawer-content title="Colors">
-        <StartMenu 
-          v-if="!store.isLoggedIn && store.isFinishedConnecting"
-          @openRegistration="openRegistration"
-          @openLogin="openLogin"/>
-        <ColorSelector
-          v-if="store.isLoggedIn"
-          class="swatch-container"
-          @selectedColor="changeColor" />
-      </n-drawer-content>
-    </n-drawer>
-    <n-layout-footer>
-      
-    </n-layout-footer>
+    <MenuDrawer />
     <LoginModal
         ref="loginModal"
       />
@@ -54,14 +35,14 @@
 
 <script>
 import VueP5 from './VueP5.vue'
-import ColorSelector from './ColorSelector.vue'
-import StartMenu from './StartMenu.vue'
 import ScriptPlayer from './ScriptPlayer.vue'
+import ScriptDrawer from './ScriptDrawer.vue'
+import MenuDrawer from './MenuDrawer.vue'
 //mport VueAxios from './VueAxios.vue'
 import { store } from './../store.js'
 import LoginModal from './LoginModal.vue'
 import VueAxios from './common/http-common'
-import {NLayout, NLayoutContent, NLayoutFooter, NDrawerContent, NDrawer, NSpace, NButton} from 'naive-ui'
+import {NLayout, NLayoutContent, NSpace, NButton} from 'naive-ui'
 import {useMessage} from 'naive-ui'
 //import axios from 'axios';
 
@@ -70,15 +51,12 @@ export default {
   mixins: [VueAxios],
   components: {
     VueP5,
-    ColorSelector,
-    StartMenu,
     LoginModal,
     ScriptPlayer,
+    ScriptDrawer,
+    MenuDrawer,
     NLayout,
     NLayoutContent,
-    NLayoutFooter,
-    NDrawerContent,
-    NDrawer,
     NSpace,
     NButton,
   },
@@ -127,7 +105,6 @@ export default {
       },
       s: 20,
       c: null,
-      hexC: "#ffffff",
       echo: null,
       sf: 1,
       oldSf: 1,
@@ -153,18 +130,14 @@ export default {
       },
       message: useMessage(),
       active: false, // color and login drawer
-      SDactive: false, // script drawer,
+      sd: {
+        active: false, // script drawer,
+      },
     }
   },
   methods: {
-    toggledrawer() {
-      this.active = !this.active;
-    },
-    toggleScriptDrawer() {
-      this.SDactive = !this.SDactive;
-    },
     changeColor(c) {
-      this.hexC = c
+      this.store.selectedColor = c
     },
     setup(p5) {
       // p5.rectMode(p5.CENTER);
@@ -276,7 +249,7 @@ export default {
         if(gridX < 0 || gridX > this.screen.x || gridY < 0 || gridY > this.screen.y) {
           return;
         } else {
-          this.c = p5.color(this.hexC)
+          this.c = p5.color(this.store.selectedColor)
           this.placePixel(gridX, gridY)
         }
       }
@@ -299,6 +272,7 @@ export default {
       this.pp(x,y)
     },
     spp(x,y,c) {
+      console.log(x,y)
       this.c = this.p5.color(c)
       this.pp(x,y)
     },
@@ -319,12 +293,6 @@ export default {
     componentToHex(c) {
       var hex = c.toString(16);
       return hex.length == 1 ? "0" + hex : hex;
-    },
-    openRegistration() {
-      this.$refs.loginModal.openRegister()
-    },
-    openLogin() {
-      this.$refs.loginModal.openLogin()
     },
     openScript() {
 

@@ -10,5 +10,14 @@ export const store = reactive({
     this.token = token
     this.isLoggedIn = true;
   },
-  user: {}
+  user: {},
+  isScriptDrawerOpen: false,
+  isMenuDrawerOpen: false,
+  toggledrawer() {
+    this.isMenuDrawerOpen = !this.isMenuDrawerOpen;
+  },
+  toggleScriptDrawer() {
+    this.isScriptDrawerOpen = !this.isScriptDrawerOpen;
+  },
+  selectedColor: ''
 })

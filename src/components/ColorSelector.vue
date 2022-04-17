@@ -4,13 +4,14 @@
       v-for="color in colors"
       :key="color" 
       :color="color" 
-      :isDisabled="color == selectedColor"
+      :isDisabled="color == store.selectedColor"
       @colorSelected="colorSelected"
     />
   </n-space>
 </template>
 
 <script>
+import { store } from './../store.js'
 import { NSpace } from 'naive-ui'
 import ColorSwatch from './ColorSwatch.vue'
 
@@ -21,7 +22,7 @@ export default {
   },
   data() {
     return {
-      selectedColor: '#fc2912',
+      store,
       colors: [
         '#AA0000',
         '#AA5500',
@@ -91,17 +92,15 @@ export default {
     }
   },
   mounted () {
-    this.$emit('selectedColor', this.colors[0]);
+    console.log("palette mounted")
   },
   methods: {
     colorSelected(c) {
-      this.selectedColor = c
-      this.$emit("selectedColor", c)
+      this.store.selectedColor = c
     }
   },
   computed: {
     isSelected() {
-      console.log(this)
       return false
     }
   }
