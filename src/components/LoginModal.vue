@@ -193,7 +193,7 @@ export default {
       this.HTTP
         .post('register', bodyFormData)
         .then(response => {
-          this.store.setToken(response.data)
+          this.store.setToken(response.data.access_token)
           this.errorMessage.info(
             "Welcome, you can start placing pixels",
             {

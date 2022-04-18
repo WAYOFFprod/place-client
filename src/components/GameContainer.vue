@@ -11,7 +11,9 @@
         @mouseReleased="mouseReleased"
         @scroll="scroll"
       />
-      <CanvasOverlay />
+      <CanvasOverlay 
+        @spp="spp"
+      />
     </n-layout-content>
     <MenuDrawer />
     <LoginModal

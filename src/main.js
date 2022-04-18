@@ -2,7 +2,9 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import Echo from "laravel-echo";
 import 'vfonts/FiraCode.css'
+import mitt from 'mitt';
 
+const emitter = mitt();
 window.Pusher = require('pusher-js')
 window.Echo = new Echo({
   broadcaster: 'pusher',
@@ -13,5 +15,7 @@ window.Echo = new Echo({
   disableStats: true
 })
 
-createApp(App).mount('#app')
+const app = createApp(App)
+app.config.globalProperties.emitter = emitter;
+app.mount('#app')
 

@@ -1,36 +1,25 @@
 <template>
- <n-el>
- <n-progress
-        type="multiple-circle"
-        :stroke-width="6"
-        :circle-gap="0.5"
-        :percentage="[
-          percentage,
-          seconds
-        ]"
-        :color="[
-          'var(--info-color)',
-          'var(--success-color)',
-        ]"
-        :rail-style="[
-          { stroke: 'var(--info-color)', opacity: 0.3 },
-          { stroke: 'var(--success-color)', opacity: 0.3 },
-        ]"
+  <n-space vertical :size="3">
+    <n-progress
+        class="script-progress"
+        type="line"
+        :percentage="percentage"
+        :show-indicator="false"
+        border-radius="0"
+        fill-border-radius="0"
       >
-    <!-- <n-progress type="circle" :percentage="percentage" > -->
-
-    <n-button type="primary" @click="toggleButton">
-      {{percentage}}%
-      <n-icon>
-        <Play16Regular />
-      </n-icon>
-    </n-button>
-  </n-progress>
- </n-el>
+      </n-progress>
+  </n-space>
+  <n-button class="script-button" type="primary" @click="toggleButton">
+    {{percentage}}%
+    <n-icon>
+      <Play16Regular />
+    </n-icon>
+  </n-button>
 </template>
 
 <script>
-import { NProgress, NIcon, NButton, NEl} from 'naive-ui'
+import { NProgress, NIcon, NButton, NSpace} from 'naive-ui'
 import Play16Regular from '@vicons/fluent/Play16Regular'
 
 export default {
@@ -39,7 +28,7 @@ export default {
     NProgress,
     NIcon,
     NButton,
-    NEl,
+    NSpace,
   },
   data () {
     return {
@@ -55,19 +44,19 @@ export default {
   methods: {
     toggleButton() {
       if(this.isPaused) {
+        this.isPaused =  false
         this.startScript()
       } else {
-        this.pauseScript()
+        this.isPaused = true
       }
-      this.isPaused = !this.isPaused;
     },
     async startScript() {
       if(this.isStarted) return
       this.isStarted = true
 
       let colors = [
-        "#0fff00",
-        "#f000ff"
+        "#0f0fff",
+        "#00f000"
       ]
       let sp = {
         x: 10,
@@ -89,25 +78,14 @@ export default {
             await this.sleep(1000);
           }
           await this.sleep(1000);
-          this.percentage = (count / size) * 100
+          this.percentage = Math.round((count / size) * 100)
           const c = colors[pixels[y][x]] // get hex string
           console.log(sp, y, x, c)
           this.$emit('spp', sp.x + x, sp.y + y, c)
         }
       }
+      this.isPaused = true;
       this.isStarted = false
-    },
-    async count() {
-      let lastUpdate;
-      while(this.isPaused) {
-        let now = Date.now();
-        let dt = now - lastUpdate;
-        lastUpdate = now;
-        this.seconds = this.seconds + (dt /1000)
-      }
-    },
-    pauseScript() {
-
     },
     sleep(milliseconds) {
       return new Promise((resolve) => setTimeout(resolve, milliseconds));
@@ -117,5 +95,18 @@ export default {
 </script>
 
 <style>
-
+.overlay {
+  position: static;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+.script-button {
+  width: 80px;
+  margin-bottom: 0px;
+}
+.script-progress {
+  min-width: 80px;
+}
 </style>

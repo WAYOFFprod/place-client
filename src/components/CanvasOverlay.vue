@@ -1,12 +1,18 @@
 <template>
   <div class="static-container">
     <n-space :size="24" align="center" v-if="store.isFinishedConnecting">
-      <n-button type="primary" @click="store.toggledrawer()">
-        {{ buttonLabel }}
-      </n-button>
-      <n-button v-if="store.isLoggedIn" type="primary" @click="store.toggleScriptDrawer()">
-        SCRIPT
-      </n-button>
+      <n-space vertical :size="3">
+        <div class="gap" />
+        <n-button type="primary" @click="store.toggledrawer()">
+          {{ buttonLabel }}
+        </n-button>
+      </n-space>
+      <n-space vertical :size="3">
+        <div class="gap" />
+        <n-button v-if="store.isLoggedIn" type="primary" @click="store.toggleScriptDrawer()">
+          SCRIPT
+        </n-button>
+      </n-space>
       <ScriptPlayer 
         ref="scriptPlayer"
         @spp="spp"
@@ -30,6 +36,12 @@ export default {
       store,
     }
   },
+  methods: {
+    spp(x,y,c) {
+      console.log("got to that one")
+      this.$emit("spp",x ,y, c)
+    }
+  },
   computed: {
     buttonLabel() {
       if(store.isLoggedIn) {
@@ -43,5 +55,7 @@ export default {
 </script>
 
 <style>
-
+.gap {
+  height: 7px;
+}
 </style>
