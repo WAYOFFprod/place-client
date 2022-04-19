@@ -227,10 +227,25 @@ export default {
 
           // only render if in bounding box
           if(bb.l < x && bb.r > x && bb.t < y && bb.b > y) {
-            this.drawTempPixel(p5, x * this.s, + y * this.s, color)
+            this.drawTempPixel(p5, x * this.s, y * this.s, color)
           }
         }
       }
+
+
+
+      let ratioX = (p5.mouseX - this.screenOffset.x)/ this.sf
+      let ratioY = (p5.mouseY - this.screenOffset.y)/ this.sf
+
+      let gridX = (ratioX - (ratioX % this.s))
+      let gridY = (ratioY - (ratioY % this.s))
+      if(gridX < 0 || gridX > this.screen.x || gridY < 0 || gridY > this.screen.y) {
+        return;
+      } else {
+        this.c = p5.color(this.store.selectedColor)
+        this.drawHoverPixel(p5, gridX, gridY, this.c)
+      }
+      
     },
     mousePressed (p5) {
       // when mouse pressed
@@ -286,6 +301,11 @@ export default {
       p5.strokeWeight(0)
       p5.fill(c)
       p5.square(x + (this.s / 4), y + (this.s / 4), (this.s / 2))
+    },
+    drawHoverPixel(p5, x, y, c) {
+      p5.strokeWeight(0)
+      p5.fill(c)
+      p5.square(x + (this.s / 3), y + (this.s / 3), (this.s / 3))
     },
     placePixel(x,y) {
       x = x / this.s
