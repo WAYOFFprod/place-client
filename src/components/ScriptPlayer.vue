@@ -1,24 +1,25 @@
 <template>
   <n-space vertical :size="3">
     <n-progress
-        class="script-progress"
-        type="line"
-        :percentage="percentage"
-        :show-indicator="false"
-        border-radius="0"
-        fill-border-radius="0"
-      >
-      </n-progress>
+      class="script-progress"
+      type="line"
+      :percentage="percentage"
+      :show-indicator="false"
+      border-radius="0"
+      fill-border-radius="0"
+    >
+    </n-progress>
+    <n-button class="script-button" type="primary" @click="toggleButton">
+      {{percentage}}%
+      <n-icon>
+        <Play16Regular />
+      </n-icon>
+    </n-button>
   </n-space>
-  <n-button class="script-button" type="primary" @click="toggleButton">
-    {{percentage}}%
-    <n-icon>
-      <Play16Regular />
-    </n-icon>
-  </n-button>
 </template>
 
 <script>
+import { store } from './../store.js'
 import { NProgress, NIcon, NButton, NSpace} from 'naive-ui'
 import Play16Regular from '@vicons/fluent/Play16Regular'
 
@@ -32,6 +33,7 @@ export default {
   },
   data () {
     return {
+      store,
       seconds: 0,
       percentage: 0, 
       isPaused: true,
@@ -53,22 +55,22 @@ export default {
     async startScript() {
       if(this.isStarted) return
       this.isStarted = true
-
-      let colors = [
-        "#0f0fff",
-        "#00f000"
-      ]
-      let sp = {
-        x: 10,
-        y: 10,
+      let colors = []
+      for (let i = 0; i < store.selectedColorList.length; i++) {
+        const element = store.selectedColorList[i]
+        colors.push(element.color)
       }
-      let pixels = [
-        [0,0,0,0,0],
-        [0,0,1,0,0],
-        [0,1,1,1,0],
-        [0,0,1,0,0],
-        [0,0,0,0,0]
-      ]
+      let sp = store.start
+      console.log(store.pixelArray)
+      let pixels = JSON.parse("["+store.pixelArray+"]");
+      // let pixels = [
+      //   [0,0,0,0,0],
+      //   [0,0,1,0,0],
+      //   [0,1,1,1,0],
+      //   [0,0,1,0,0],
+      //   [0,0,0,0,0]
+      // ]
+      console.log(colors, sp, pixels)
       let size = pixels.length * pixels[0].length
       let count = 0
       for(let y = 0; y < pixels.length; y++) {
@@ -77,11 +79,10 @@ export default {
           while(this.isPaused) {
             await this.sleep(1000);
           }
-          await this.sleep(1000);
           this.percentage = Math.round((count / size) * 100)
           const c = colors[pixels[y][x]] // get hex string
-          console.log(sp, y, x, c)
           this.$emit('spp', sp.x + x, sp.y + y, c)
+          await this.sleep(1000);
         }
       }
       this.isPaused = true;
