@@ -50,10 +50,10 @@ export const store = reactive({
   },
   selectedColorList: [{
     id: '0',
-    color: '#ffffff'
+    color: '#DA291C'
   }, {
     id: '1',
-    color: '##DA291C'
+    color: '#ffffff'
   }],
   colors: [
     '#AA0000',

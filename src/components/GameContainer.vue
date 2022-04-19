@@ -47,6 +47,16 @@ export default {
     NLayout,
     NLayoutContent,
   },
+  created() {
+    this.emitter.on('addToPreview', (v) => {
+      let i = v.x + (this.gridXX * v.y)
+      this.tempPixels[i] = v.c
+    })
+    this.emitter.on('clearPreview', (v) => {
+      let i = v.x + (this.gridXX * v.y)
+      delete this.tempPixels[i]
+    })
+  },
   mounted() {
     this.$refs.p5vue.loading()
     this.p5 = this.$refs.p5vue.p5
@@ -58,8 +68,11 @@ export default {
       })
 
     window.Echo.channel("pixel-change").listen('PixelEvent', (e) => {
-      this.pixels[parseInt(e.x) + (this.gridXX * parseInt(e.y))] = e.color;
-      //this.drawPixel(p5, e.x * this.s, + e.y * this.s, e.color)
+      let i = parseInt(e.x) + (this.gridXX * parseInt(e.y))
+      this.pixels[i] = e.color
+      if(this.tempPixels[i] != undefined) {
+        delete this.tempPixels[i]
+      }
     })
   },
   data () {
@@ -73,6 +86,7 @@ export default {
         offY: 0
       },
       pixels: [],
+      tempPixels: [],
       speed: 2,
       screen: {
         x: 1000 * 20,
@@ -202,6 +216,21 @@ export default {
           }
         }
       }
+
+      // draw  temp points
+      for (const key in this.tempPixels) {
+        if (Object.hasOwnProperty.call(this.tempPixels, key)) {
+          const color = this.tempPixels[key];
+
+          const x = key % this.gridXX;
+          const y = Math.floor(key / this.gridXX);
+
+          // only render if in bounding box
+          if(bb.l < x && bb.r > x && bb.t < y && bb.b > y) {
+            this.drawTempPixel(p5, x * this.s, + y * this.s, color)
+          }
+        }
+      }
     },
     mousePressed (p5) {
       // when mouse pressed
@@ -253,21 +282,27 @@ export default {
       p5.fill(c)
       p5.square(x, y, this.s)
     },
+    drawTempPixel(p5, x, y, c) {
+      p5.strokeWeight(0)
+      p5.fill(c)
+      p5.square(x + (this.s / 4), y + (this.s / 4), (this.s / 2))
+    },
     placePixel(x,y) {
       x = x / this.s
       y = y / this.s
       this.pp(x,y)
     },
     spp(x,y,c) {
-      console.log(x,y)
       this.c = this.p5.color(c)
       this.pp(x,y)
     },
     pp(x, y) {
+      let c = this.rgbToHex(this.c.levels)
+      this.tempPixels[x + (this.gridXX * y)] = c;
       const bodyFormData = new FormData()
       bodyFormData.append('x', x)
       bodyFormData.append('y', y)
-      bodyFormData.append('color', this.rgbToHex(this.c.levels))
+      bodyFormData.append('color', c)
       this.HTTP
         .post('pixels/add', bodyFormData, { headers: {"Authorization" : 'Bearer ' + store.token} })
         .then(response => {

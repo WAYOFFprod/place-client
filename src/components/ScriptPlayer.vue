@@ -38,10 +38,25 @@ export default {
       percentage: 0, 
       isPaused: true,
       isStarted: false,
+      colors: [],
+      sp: {
+        x: 0,
+        y: 0
+      },
+      pixels: []
     }
   },
+  created() {
+    this.emitter.on('preview', () => {
+      this.preview()
+    })
+    this.emitter.on('clear', () => {
+      this.clear()
+    })
+  },
   mounted() {
-    console.log("script mounted")
+    console.log("ssss mounted")
+    this.clear()
   },
   methods: {
     toggleButton() {
@@ -52,36 +67,64 @@ export default {
         this.isPaused = true
       }
     },
+    setup() {
+      this.colors = []
+      for (let i = 0; i < store.selectedColorList.length; i++) {
+        const element = store.selectedColorList[i]
+        this.colors.push(element.color)
+      }
+      this.sp.x = store.start.x
+      this.sp.y = store.start.y
+
+      this.pixels = JSON.parse("["+store.pixelArray+"]");
+    },
+    preview() {
+      this.setup()
+      let size = this.pixels.length * this.pixels[0].length
+      let count = 0
+      for(let y = 0; y < this.pixels.length; y++) {
+        for(let x = 0; x < this.pixels[y].length; x++) {
+          count++
+          this.percentage = Math.round((count / size) * 100)
+          const c = this.colors[this.pixels[y][x]] // get hex string
+          this.emitter.emit('addToPreview', {x: this.sp.x + x, y: this.sp.y + y, c: c})
+        }
+      }
+      this.isPaused = true;
+      this.isStarted = false
+    },
+    clear() {
+      this.setup()
+      let size = this.pixels.length * this.pixels[0].length
+      let count = 0
+      for(let y = 0; y < this.pixels.length; y++) {
+        for(let x = 0; x < this.pixels[y].length; x++) {
+          count++
+          this.percentage = Math.round((count / size) * 100)
+          const c = this.colors[this.pixels[y][x]] // get hex string
+          this.emitter.emit('clearPreview', {x: this.sp.x + x, y: this.sp.y + y, c: c})
+        }
+      }
+      this.isPaused = true;
+      this.isStarted = false
+    },
     async startScript() {
       if(this.isStarted) return
       this.isStarted = true
-      let colors = []
-      for (let i = 0; i < store.selectedColorList.length; i++) {
-        const element = store.selectedColorList[i]
-        colors.push(element.color)
-      }
-      let sp = store.start
-      console.log(store.pixelArray)
-      let pixels = JSON.parse("["+store.pixelArray+"]");
-      // let pixels = [
-      //   [0,0,0,0,0],
-      //   [0,0,1,0,0],
-      //   [0,1,1,1,0],
-      //   [0,0,1,0,0],
-      //   [0,0,0,0,0]
-      // ]
-      console.log(colors, sp, pixels)
-      let size = pixels.length * pixels[0].length
+      
+      this.setup()
+      
+      let size = this.pixels.length * this.pixels[0].length
       let count = 0
-      for(let y = 0; y < pixels.length; y++) {
-        for(let x = 0; x < pixels[y].length; x++) {
+      for(let y = 0; y < this.pixels.length; y++) {
+        for(let x = 0; x < this.pixels[y].length; x++) {
           count++
           while(this.isPaused) {
             await this.sleep(1000);
           }
           this.percentage = Math.round((count / size) * 100)
-          const c = colors[pixels[y][x]] // get hex string
-          this.$emit('spp', sp.x + x, sp.y + y, c)
+          const c = this.colors[this.pixels[y][x]] // get hex string
+          this.$emit('spp', this.sp.x + x, this.sp.y + y, c)
           await this.sleep(1000);
         }
       }

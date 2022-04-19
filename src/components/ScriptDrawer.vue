@@ -1,5 +1,5 @@
 <template>
-  <n-drawer v-model:show="store.isScriptDrawerOpen" :width="502" placement="top">
+  <n-drawer v-model:show="store.isScriptDrawerOpen" :width="502" placement="top" :on-after-leave="closeDrawer" :on-after-enter="openDrawer">
     <n-drawer-content title="Colors">
         <n-scrollbar x-scrollable>
           <n-space>
@@ -59,6 +59,12 @@ export default {
     }
   },
   methods: {
+    closeDrawer() {
+      this.emitter.emit("preview")
+    },
+    openDrawer() {
+      this.emitter.emit("clear")
+    },
     startScript() {
       this.store.isScriptRunning = true
     },
