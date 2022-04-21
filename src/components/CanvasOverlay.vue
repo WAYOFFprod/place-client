@@ -38,8 +38,7 @@ export default {
   },
   methods: {
     spp(x,y,c) {
-      console.log("got to that one")
-      this.$emit("spp",x ,y, c)
+      this.$emit("spp" ,x ,y, c)
     }
   },
   computed: {
