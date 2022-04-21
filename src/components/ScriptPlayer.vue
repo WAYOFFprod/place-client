@@ -143,6 +143,7 @@ export default {
         if(y < store.offset.y) continue
         for(let x = 0; x < this.pixels[y].length; x++) {
           if(x < store.offset.x && y == store.offset.y) continue
+          if(this.pixels[y][x] < 0) continue
           const c = this.colors[this.pixels[y][x]] // get hex string
           this.emitter.emit('addToPreview', {x: this.sp.x + x, y: this.sp.y + y, c: c})
         }
@@ -177,6 +178,7 @@ export default {
         for(let x = 0; x < this.pixels[y].length; x++) {
           if(!this.isStarted) return // stop function
           if(x < store.offset.x && y == store.offset.y) continue
+          if(this.pixels[y][x] < 0) continue
           count++
           while(this.isPaused) {
             await this.sleep(1000);
