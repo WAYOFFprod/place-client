@@ -22,6 +22,7 @@
 import { store } from './../store.js'
 import { NProgress, NIcon, NButton, NSpace} from 'naive-ui'
 import Play16Regular from '@vicons/fluent/Play16Regular'
+import {useDialog} from 'naive-ui'
 
 export default {
   components: {
@@ -43,20 +44,20 @@ export default {
         x: 0,
         y: 0
       },
-      pixels: []
+      pixels: [],
+      dialog: useDialog(),
+      dialogViewed: false,
     }
   },
   created() {
+    store.loadScriptData()
     this.emitter.on('preview', () => {
       this.preview()
     })
     this.emitter.on('clear', () => {
       this.clear()
+      this.dialogViewed = false
     })
-  },
-  mounted() {
-    console.log("ssss mounted")
-    this.clear()
   },
   methods: {
     toggleButton() {
@@ -76,52 +77,114 @@ export default {
       this.sp.x = store.start.x
       this.sp.y = store.start.y
 
-      this.pixels = JSON.parse("["+store.pixelArray+"]");
+      this.parseJson("["+store.pixelArray+"]")
+      let ok = this.validate()
+      if(ok) {
+        store.saveScriptData()
+      }
+      return ok
+    },
+    validate() {
+      let isValid = true
+      isValid = this.checkCoords()
+      return isValid
+    },
+    checkCoords() {
+      if(!this.dialogViewed) {
+        this.dialogViewed = true
+        if(this.sp.x < 0 || this.sp.y < 0) {
+          this.dialog.error({
+            title: 'X or Y coordinate are negative.',
+            content: 'Can\'t have that!',
+            positiveText: 'Ok!',
+            onPositiveClick: () => {
+              store.isScriptDrawerOpen = true
+            }
+          })
+          return false
+        }
+        if(this.sp.x + this.pixels[0].length > 100000 || this.sp.y + this.pixels.length > 1000000) {
+          this.dialog.error({
+            title: 'Your drawing goes too far.',
+            content: 'Can\'t have that!',
+            positiveText: 'Ok!',
+            onPositiveClick: () => {
+              store.isScriptDrawerOpen = true
+            }
+          })
+          return false
+        }
+      }
+      return true
+    },
+    parseJson(str) {
+      try {
+        this.pixels = JSON.parse(str);
+      } catch (e) {
+        console.log(e);
+        if(!this.dialogViewed) {
+          this.dialogViewed = true
+          this.dialog.error({
+            title: 'there seem to be an issue with the arrays',
+            content: 'Make sure you didn\'t forget anything',
+            positiveText: 'Ok!',
+            onPositiveClick: () => {
+              store.isScriptDrawerOpen = true
+            }
+          })
+        }
+        return false;
+      }
+      return true;
     },
     preview() {
       this.setup()
-      let size = this.pixels.length * this.pixels[0].length
-      let count = 0
       for(let y = 0; y < this.pixels.length; y++) {
+        if(y < store.offset.y) continue
         for(let x = 0; x < this.pixels[y].length; x++) {
-          count++
-          this.percentage = Math.round((count / size) * 100)
+          if(x < store.offset.x && y == store.offset.y) continue
           const c = this.colors[this.pixels[y][x]] // get hex string
           this.emitter.emit('addToPreview', {x: this.sp.x + x, y: this.sp.y + y, c: c})
         }
       }
-      this.isPaused = true;
       this.isStarted = false
     },
     clear() {
       this.setup()
-      let size = this.pixels.length * this.pixels[0].length
-      let count = 0
       for(let y = 0; y < this.pixels.length; y++) {
+        if(y < store.offset.y) continue
         for(let x = 0; x < this.pixels[y].length; x++) {
-          count++
-          this.percentage = Math.round((count / size) * 100)
+          if(x < store.offset.x && y == store.offset.y) continue
           const c = this.colors[this.pixels[y][x]] // get hex string
           this.emitter.emit('clearPreview', {x: this.sp.x + x, y: this.sp.y + y, c: c})
         }
       }
-      this.isPaused = true;
+      this.percentage = 0
+      this.isPaused = true
       this.isStarted = false
     },
     async startScript() {
       if(this.isStarted) return
       this.isStarted = true
       
-      this.setup()
+      let isvalid = this.setup()
+      if(!isvalid) return
       
-      let size = this.pixels.length * this.pixels[0].length
+      let size = this.pixels.length * this.pixels[0].length - (store.offset.x + store.offset.y + (store.offset.x * store.offset.y))
       let count = 0
       for(let y = 0; y < this.pixels.length; y++) {
+        if(y < store.offset.y) continue
         for(let x = 0; x < this.pixels[y].length; x++) {
+          if(!this.isStarted) return // stop function
+          if(x < store.offset.x && y == store.offset.y) continue
           count++
           while(this.isPaused) {
             await this.sleep(1000);
+            if(!this.isStarted) return // stop function
           }
+          store.offset.x = x
+          store.offset.y = y
+          
           this.percentage = Math.round((count / size) * 100)
           const c = this.colors[this.pixels[y][x]] // get hex string
           this.$emit('spp', this.sp.x + x, this.sp.y + y, c)
@@ -130,6 +193,8 @@ export default {
       }
       this.isPaused = true;
       this.isStarted = false
+      store.offset.x = 0
+      store.offset.y = 0
     },
     sleep(milliseconds) {
       return new Promise((resolve) => setTimeout(resolve, milliseconds));

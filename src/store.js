@@ -39,14 +39,39 @@ export const store = reactive({
   },
   selectedColor: '',
   isScriptRunning: false,
+  saveScriptData() {
+    localStorage.setItem('pixel_array', this.pixelArray)
+    localStorage.setItem('store_position', JSON.stringify(this.start))
+    localStorage.setItem('start_offset', JSON.stringify(this.offset))
+    localStorage.setItem('selected_color_list', JSON.stringify(this.selectedColorList))
+  },
+  loadScriptData() {
+    console.log(localStorage.getItem('pixel_array'))
+    if(localStorage.getItem('pixel_array') != null) {
+      this.pixelArray = localStorage.getItem('pixel_array')
+    }
+    if(localStorage.getItem('store_position')!= null) {
+      this.start = JSON.parse(localStorage.getItem('store_position'))
+    }
+    if(localStorage.getItem('start_offset')!= null) {
+      this.offset = JSON.parse(localStorage.getItem('start_offset'))
+    }
+    if(localStorage.getItem('selected_color_list')!= null) {
+      this.selectedColorList = JSON.parse(localStorage.getItem('selected_color_list'))
+    }
+  },
   pixelArray: '[0,0,0,0,0],\n' +
     "[0,0,1,0,0],\n" +
     "[0,1,1,1,0],\n" +
     "[0,0,1,0,0],\n" +
     "[0,0,0,0,0]",
   start: {
-    x: 5,
-    y: 5
+    x: 20,
+    y: 20
+  },
+  offset: {
+    x: 2,
+    y: 0
   },
   selectedColorList: [{
     id: '0',

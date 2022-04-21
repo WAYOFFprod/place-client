@@ -13,11 +13,19 @@
               </n-form-item>
             </n-space>
             <n-space vertical>
-              <n-form-item  label="X" path="start.x">
+              <n-form-item  label="Top Left corner X" path="start.x">
                 <n-input-number v-model:value="store.start.x" clearable />
               </n-form-item>
-              <n-form-item  label="Y" path="start.y">
+              <n-form-item  label="Top Left corner Y" path="start.y">
                 <n-input-number v-model:value="store.start.y" clearable />
+              </n-form-item>
+            </n-space>
+             <n-space vertical>
+              <n-form-item  label="Offset X" path="offset.x">
+                <n-input-number v-model:value="store.offset.x" clearable />
+              </n-form-item>
+              <n-form-item  label="Offset Y" path="offset.y">
+                <n-input-number v-model:value="store.offset.y" clearable />
               </n-form-item>
             </n-space>
             <n-space vertical>
@@ -26,7 +34,7 @@
                   Add whatever you want
                 </template>
                 <template #default="{ value }">
-                  <n-input v-model:value="value.id" type="text" />
+                  <!-- <n-input v-model:value="value.id" type="text" /> -->
                   <n-select :options="colorList" v-model:value="value.color" />
                 </template>
               </n-dynamic-input>
