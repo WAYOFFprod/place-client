@@ -42,6 +42,19 @@ export default {
         }  
       }
 
+      p5.touchStarted = (e) => {
+        if(e.path[0].classList.contains('p5Canvas')) { // only pass event if scroll is on top of canvas
+          console.log(e);
+          t.$emit('mousePressed', p5);
+        }
+      }
+
+      p5.touchEnded = (e) => {
+        if(e.path[0].classList.contains('p5Canvas')) { // only pass event if scroll is on top of canvas
+          t.$emit('mouseReleased', p5);
+        }
+      }
+
       p5.mousePressed = (e) => {
         if(e.path[0].classList.contains('p5Canvas')) { // only pass event if scroll is on top of canvas
           t.$emit('mousePressed', p5);
@@ -60,10 +73,11 @@ export default {
         }
       }
       window.addEventListener("wheel", function(e) {
+        e.preventDefault();
         if(e.path[0].classList.contains('p5Canvas')) { // only pass event if scroll is on top of canvas
           t.$emit('scroll', e); 
         }
-      });
+      }, { passive: false });
       p5.mouseDragged = (e) => {
         if(e.path[0].classList.contains('p5Canvas')) { // only pass event if scroll is on top of canvas
           t.$emit('mouseDragged', p5);

@@ -232,8 +232,6 @@ export default {
         }
       }
 
-
-
       let ratioX = (p5.mouseX - this.screenOffset.x)/ this.sf
       let ratioY = (p5.mouseY - this.screenOffset.y)/ this.sf
 

@@ -24,8 +24,13 @@ export default {
   data() {
     return {
       darkTheme,
-      theme: darkTheme
+      theme: darkTheme,
     }
+  },
+  created() {
+    window.addEventListener('wheel', function (event) {
+      event.preventDefault()
+    },{ passive: false })
   }
 }
 </script>
@@ -35,5 +40,9 @@ export default {
   widows: 100%;
   height: 100%;
   overflow: none;
+}
+body {
+  height: 100%;
+  overflow: hidden;
 }
 </style>
