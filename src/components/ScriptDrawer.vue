@@ -35,7 +35,17 @@
                 </template>
                 <template #default="{ value }">
                   <!-- <n-input v-model:value="value.id" type="text" /> -->
-                  <n-select :options="colorList" v-model:value="value.color" />
+                  <n-color-picker
+                    class="color-picker"
+                    v-model:value="value.color"
+                    :swatches="[
+                      '#FFFFFF',
+                      '#18A058',
+                      '#2080F0',
+                      '#F0A020',
+                      'rgba(208, 48, 80, 1)'
+                    ]"
+                  />
                 </template>
               </n-dynamic-input>
             </n-space>
@@ -47,7 +57,7 @@
 
 <script>
 import { store } from './../store.js'
-import { NDrawer, NDrawerContent, NScrollbar, NInput, NSpace, NInputNumber, NFormItem, NSelect, NDynamicInput} from 'naive-ui'
+import { NDrawer, NDrawerContent, NScrollbar, NInput, NSpace, NInputNumber, NFormItem, NDynamicInput, NColorPicker} from 'naive-ui'
 
 export default {
   components: {
@@ -58,8 +68,8 @@ export default {
     NSpace,
     NInputNumber,
     NFormItem,
-    NSelect,
-    NDynamicInput
+    NDynamicInput,
+    NColorPicker
   },
   data () {
     return {
@@ -100,7 +110,6 @@ export default {
           value: element,
         })
       }
-      console.log(colorSelect)
       return colorSelect
     }
   }
@@ -110,5 +119,8 @@ export default {
 <style>
 .half-width {
   width: 50%;
+}
+.color-picker {
+  min-width: 100px;
 }
 </style>
