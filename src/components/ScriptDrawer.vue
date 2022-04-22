@@ -29,25 +29,23 @@
               </n-form-item>
             </n-space>
             <n-space vertical>
-              <n-dynamic-input v-model:value="store.selectedColorList" :on-create="onCreateColor">
-                <template #create-button-default>
-                  Add whatever you want
-                </template>
-                <template #default="{ value }">
-                  <!-- <n-input v-model:value="value.id" type="text" /> -->
-                  <n-color-picker
-                    class="color-picker"
-                    v-model:value="value.color"
-                    :swatches="[
-                      '#FFFFFF',
-                      '#18A058',
-                      '#2080F0',
-                      '#F0A020',
-                      'rgba(208, 48, 80, 1)'
-                    ]"
-                  />
-                </template>
-              </n-dynamic-input>
+              <n-scrollbar y-scrollable>
+                <n-dynamic-input v-model:value="store.selectedColorList" :on-create="onCreateColor">
+                  <template #create-button-default>
+                    Add whatever you want
+                  </template>
+                  <template #default="{ value }">
+                    <!-- <n-input v-model:value="value.id" type="text" /> -->
+                    <span class="id-val">{{ value.id }}</span>
+                    <n-color-picker
+                      class="color-picker"
+                      v-model:value="value.color"
+                      :show-alpha="false"
+                      :modes="['hex']"
+                    />
+                  </template>
+                </n-dynamic-input>
+              </n-scrollbar>
             </n-space>
           </n-space>
         </n-scrollbar>
@@ -88,7 +86,7 @@ export default {
     },
     onCreateColor() {
         return {
-          id: '',
+          id: store.selectedColorList.length,
           color: ''
         };
       }
@@ -122,5 +120,11 @@ export default {
 }
 .color-picker {
   min-width: 100px;
+}
+.id-val {
+  height: 100%;
+  text-align: center;
+  min-width: 20px;
+  margin: 5px;
 }
 </style>

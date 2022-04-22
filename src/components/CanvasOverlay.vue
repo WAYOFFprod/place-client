@@ -3,6 +3,20 @@
     <n-space :size="24" align="center" v-if="store.isFinishedConnecting">
       <n-space vertical :size="3">
         <div class="gap" />
+        <n-color-picker
+            class="color-picker"
+            :show-alpha="false"
+            v-model:value="store.selectedColor"
+            :swatches="[
+              '#FFFFFF',
+              '#000000',
+            ]"
+            :modes="['hex']"
+            size="large"
+          />
+      </n-space>
+      <n-space vertical :size="3">
+        <div class="gap" />
         <n-button type="primary" @click="store.toggledrawer()">
           {{ buttonLabel }}
         </n-button>
@@ -24,12 +38,13 @@
 <script>
 import { store } from './../store.js'
 import ScriptPlayer from './ScriptPlayer.vue'
-import {NButton, NSpace} from 'naive-ui'
+import {NButton, NSpace, NColorPicker} from 'naive-ui'
 export default {
   components: {
     ScriptPlayer,
     NButton,
-    NSpace
+    NSpace,
+    NColorPicker
   },
   data () {
     return {
@@ -56,5 +71,8 @@ export default {
 <style>
 .gap {
   height: 7px;
+}
+.color-picker {
+  margin: 2px;
 }
 </style>

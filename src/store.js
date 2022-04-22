@@ -37,7 +37,7 @@ export const store = reactive({
     this.isLoginModalOpen = false
     this.isRegistrationModalOpen = false
   },
-  selectedColor: '',
+  selectedColor: '#000000',
   isScriptRunning: false,
   saveScriptData() {
     localStorage.setItem('pixel_array', this.pixelArray)
@@ -46,7 +46,6 @@ export const store = reactive({
     localStorage.setItem('selected_color_list', JSON.stringify(this.selectedColorList))
   },
   loadScriptData() {
-    console.log(localStorage.getItem('pixel_array'))
     if(localStorage.getItem('pixel_array') != null) {
       this.pixelArray = localStorage.getItem('pixel_array')
     }
