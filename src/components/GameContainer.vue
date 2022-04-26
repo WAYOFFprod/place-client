@@ -198,9 +198,7 @@ export default {
           this.update.points = false
         }
       }
-      console.log(this.screenOff.x, this.grab.x)
       let sfChange = this.sf - this.oldSf
-      console.log(sfChange)
       this.screenOffset.x = this.screenOff.x - ((-this.screenOff.x + this.center.x) * sfChange)
       this.screenOffset.y = this.screenOff.y - ((-this.screenOff.y + this.center.y) * sfChange)
       if(sfChange > 0.01) {
