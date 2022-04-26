@@ -193,7 +193,8 @@ export default {
         this.screenOff.x = (p5.mouseX - this.grab.x)  / this.sf
         this.screenOff.y = (p5.mouseY - this.grab.y) / this.sf
 
-        if(Math.abs(this.grab.startX - this.grab.x) > 1 || Math.abs(this.grab.startY - this.grab.y) > 1) {
+        // don't update points if the user is dragging
+        if(Math.abs(this.grab.startX - p5.mouseX) > 1 || Math.abs(this.grab.startY - p5.mouseY) > 1) {
           this.update.points = false
         }
       }
@@ -250,7 +251,6 @@ export default {
           }
         }
       }
-      
 
       let ratioX = (p5.mouseX - this.screenOffset.x)/ this.sf
       let ratioY = (p5.mouseY - this.screenOffset.y)/ this.sf
