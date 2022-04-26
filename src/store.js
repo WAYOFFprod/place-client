@@ -2,6 +2,13 @@ import { reactive } from 'vue'
 
 
 export const store = reactive({
+  screen: { // screen size in pixel
+    x: 1000 * 20,
+    y: 1000 * 20
+  },
+  s: 20, // pixel per "pixel" / scale
+  ss: 100, // pixel per section
+  gridXX: 1000, // grid size
   token: localStorage.getItem('id_token') || '',
   isFinishedConnecting: false,
   isLoggedIn: false,

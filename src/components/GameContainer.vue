@@ -31,6 +31,7 @@ import CanvasOverlay from './CanvasOverlay.vue'
 import { store } from './../store.js'
 import LoginModal from './LoginModal.vue'
 import VueAxios from './common/http-common'
+import GridSection from './common/GridSection.js'
 import {NLayout, NLayoutContent} from 'naive-ui'
 import {useMessage} from 'naive-ui'
 //import axios from 'axios';
@@ -49,27 +50,37 @@ export default {
   },
   created() {
     this.emitter.on('addToPreview', (v) => {
-      let i = v.x + (this.gridXX * v.y)
+      let i = v.x + (store.gridXX * v.y)
       this.tempPixels[i] = v.c
     })
     this.emitter.on('clearPreview', (v) => {
-      let i = v.x + (this.gridXX * v.y)
+      let i = v.x + (store.gridXX * v.y)
       delete this.tempPixels[i]
     })
   },
   mounted() {
     this.$refs.p5vue.loading()
     this.p5 = this.$refs.p5vue.p5
+    for(let y = 0; y < store.gridXX / store.ss; y++) {
+      for(let x = 0; x < store.gridXX / store.ss; x++) {
+        this.gridSections.push(new GridSection(this.p5, x, y, store.ss, store.s, store.gridXX))
+      }
+    }
     this.HTTP
       .get('pixels')
       .then(response => {
-        this.pixels = response.data
+        for (const key in response.data) {
+          if(key < 1000000 && key >= 0) {
+            this.placePixelInSection(key, response.data[key])
+          }
+        }
+        
         this.$refs.p5vue.finishedLoading()
       })
 
     window.Echo.channel("pixel-change").listen('PixelEvent', (e) => {
-      let i = parseInt(e.x) + (this.gridXX * parseInt(e.y))
-      this.pixels[i] = e.color
+      let i = parseInt(e.x) + (store.gridXX * parseInt(e.y))
+      this.placePixelInSection(i, e.color)
       if(this.tempPixels[i] != undefined) {
         delete this.tempPixels[i]
       }
@@ -79,19 +90,16 @@ export default {
     return {
       p5: null,
       store,
+      gridSections: [],
       grab: {
         x: 0,
         y: 0,
-        offX: 0,
-        offY: 0
+        startX: 0,
+        startY: 0
       },
       pixels: [],
       tempPixels: [],
       speed: 2,
-      screen: {
-        x: 1000 * 20,
-        y: 1000 * 20
-      },
       screenOff: {
         x: 0,
         y: 0
@@ -104,7 +112,6 @@ export default {
         x: 0,
         y: 0
       },
-      s: 20,
       c: null,
       echo: null,
       sf: 1,
@@ -134,11 +141,15 @@ export default {
       sd: {
         active: false, // script drawer,
       },
+      update: {
+        points: true,
+        preview: true
+      }
     }
   },
   methods: {
     changeColor(c) {
-      this.store.selectedColor = c
+      store.selectedColor = c
     },
     setup(p5) {
       // p5.rectMode(p5.CENTER);
@@ -149,7 +160,7 @@ export default {
       this.center.x = p5.windowWidth / 2;
       this.center.y = (p5.windowHeight) / 2;
 
-      let sgs = this.s * this.lg.size / 2
+      let sgs = store.s * this.lg.size / 2
       this.lg.x.min = this.center.x - sgs
       this.lg.x.max = this.center.x + sgs
       this.lg.y.min = this.center.y - sgs
@@ -164,11 +175,11 @@ export default {
       
       for(let x = 0; x < this.lg.size + 1; x++) {
         let move =  p5.sin(this.lg.a + (x * this.lg.delay)) * this.lg.amp
-        p5.line(this.lg.x.min + (x * this.s), move + this.lg.y.min, this.lg.x.min + (x * this.s), move + this.lg.y.max);
+        p5.line(this.lg.x.min + (x * store.s), move + this.lg.y.min, this.lg.x.min + (x * store.s), move + this.lg.y.max);
       }
       for(let y = 0; y < this.lg.size + 1;y++) {
         let move =  p5.sin(this.lg.a + (y * this.lg.delay)) * this.lg.amp
-        p5.line(move + this.lg.x.min,this.lg.y.min + + (y * this.s), move + this.lg.x.max, this.lg.y.min + (y * this.s));
+        p5.line(move + this.lg.x.min,this.lg.y.min + + (y * store.s), move + this.lg.x.max, this.lg.y.min + (y * store.s));
       }
       this.lg.a += p5.TWO_PI / s
 
@@ -181,71 +192,82 @@ export default {
         // store the offset and divide by the scale factor to keep constant speed while dragging 
         this.screenOff.x = (p5.mouseX - this.grab.x)  / this.sf
         this.screenOff.y = (p5.mouseY - this.grab.y) / this.sf
+
+        if(Math.abs(this.grab.startX - this.grab.x) > 1 || Math.abs(this.grab.startY - this.grab.y) > 1) {
+          this.update.points = false
+        }
       }
+      console.log(this.screenOff.x, this.grab.x)
       let sfChange = this.sf - this.oldSf
+      console.log(sfChange)
       this.screenOffset.x = this.screenOff.x - ((-this.screenOff.x + this.center.x) * sfChange)
       this.screenOffset.y = this.screenOff.y - ((-this.screenOff.y + this.center.y) * sfChange)
+      if(sfChange > 0.01) {
+        this.update.points = false
+      }
       p5.translate(this.screenOffset.x, this.screenOffset.y)
       p5.scale(this.sf);
 
       // draw grid
       p5.background(0);
       p5.fill(255)
-      p5.rect(0, 0, this.screen.x, this.screen.y);
+      p5.rect(0, 0, store.screen.x, store.screen.y);
 
       p5.stroke(220)
       p5.strokeWeight(1)
-      for(let x = 0; x < this.screen.x / this.s ;x++) {
-        p5.line(x * this.s, 0, x * this.s, this.screen.y);
+      for(let x = 0; x < store.screen.x / store.s ;x++) {
+        p5.line(x * store.s, 0, x * store.s, store.screen.y);
       }
-      for(let y = 0; y < this.screen.y / this.s ;y++) {
-        p5.line(0, y * this.s, this.screen.y, y * this.s);
+      for(let y = 0; y < store.screen.y / store.s ;y++) {
+        p5.line(0, y * store.s, store.screen.y, y * store.s);
       }
       const bb = this.boundingBox
-      // draw points
-      for (const key in this.pixels) {
-        if (Object.hasOwnProperty.call(this.pixels, key)) {
-          const color = this.pixels[key];
-
-          const x = key % this.gridXX;
-          const y = Math.floor(key / this.gridXX);
-
-          // only render if in bounding box
-          if(bb.l < x && bb.r > x && bb.t < y && bb.b > y) {
-            this.drawPixel(p5, x * this.s, + y * this.s, color)
+      const g = store.gridXX / store.ss
+      // draw pixels
+      if(this.update.points) {
+        for(let i = 0; i < this.gridSections.length; i++) {
+          const x = i % g
+          const y = Math.floor(i / g);
+          if(bb.l <= x && bb.r >= x && bb.t <= y && bb.b >= y) {
+            this.gridSections[i].draw()
           }
         }
       }
 
-      // draw  temp points
-      for (const key in this.tempPixels) {
-        if (Object.hasOwnProperty.call(this.tempPixels, key)) {
-          const color = this.tempPixels[key];
+      if(this.update.preview) {
+        // draw  temp pixels
+        for (const key in this.tempPixels) {
+          if (Object.hasOwnProperty.call(this.tempPixels, key)) {
+            const color = this.tempPixels[key];
 
-          const x = key % this.gridXX;
-          const y = Math.floor(key / this.gridXX);
+            const x = key % store.gridXX;
+            const y = Math.floor(key / store.gridXX);
 
-          // only render if in bounding box
-          if(bb.l < x && bb.r > x && bb.t < y && bb.b > y) {
-            this.drawTempPixel(p5, x * this.s, y * this.s, color)
+            // only render if in bounding box
+            if(bb.l < x && bb.r > x && bb.t < y && bb.b > y) {
+              this.drawTempPixel(p5, x * store.s, y * store.s, color)
+            }
           }
         }
       }
+      
 
       let ratioX = (p5.mouseX - this.screenOffset.x)/ this.sf
       let ratioY = (p5.mouseY - this.screenOffset.y)/ this.sf
 
-      let gridX = (ratioX - (ratioX % this.s))
-      let gridY = (ratioY - (ratioY % this.s))
-      if(gridX < 0 || gridX > this.screen.x || gridY < 0 || gridY > this.screen.y) {
+      let gridX = (ratioX - (ratioX % store.s))
+      let gridY = (ratioY - (ratioY % store.s))
+      if(gridX < 0 || gridX > store.screen.x || gridY < 0 || gridY > store.screen.y) {
         return;
       } else {
-        this.c = p5.color(this.store.selectedColor)
+        this.c = p5.color(store.selectedColor)
         this.drawHoverPixel(p5, gridX, gridY, this.c)
       }
       
     },
     mousePressed (p5) {
+      this.grab.startX = p5.mouseX
+      this.grab.startY = p5.mouseY
       // when mouse pressed
       // store the position of the initial grab and multiply the offset by the scale factore (to noralize?)
       this.grab.x = p5.mouseX - (this.screenOff.x * this.sf)
@@ -255,6 +277,7 @@ export default {
       this.mouseDown = true
     },
     mouseReleased (p5) {
+      this.update.points = true
       this.mouseDown = false;
       let dragVector = p5.createVector(this.screenMove.x, this.screenMove.y);
       let ogVector = p5.createVector(p5.mouseX, p5.mouseY)
@@ -273,41 +296,62 @@ export default {
         let ratioX = (p5.mouseX - this.screenOffset.x)/ this.sf
         let ratioY = (p5.mouseY - this.screenOffset.y)/ this.sf
 
-        let gridX = (ratioX - (ratioX % this.s))
-        let gridY = (ratioY - (ratioY % this.s))
-        if(gridX < 0 || gridX > this.screen.x || gridY < 0 || gridY > this.screen.y) {
+        let gridX = (ratioX - (ratioX % store.s))
+        let gridY = (ratioY - (ratioY % store.s))
+        if(gridX < 0 || gridX > store.screen.x || gridY < 0 || gridY > store.screen.y) {
           return;
         } else {
-          this.c = p5.color(this.store.selectedColor)
+          this.c = p5.color(store.selectedColor)
           this.placePixel(gridX, gridY)
         }
       }
     },
     scroll(e) {
+      this.update.points = false
       if (e.deltaY > 0) {
         this.sf *= 1.05;
       } else {
         this.sf *= 0.95;
       }
+      this.endScroll()
+    },
+    async endScroll() {
+      await this.waitfor(100);
+      this.update.points = true
+    },
+    waitfor(s) {
+      return new Promise(resolve => {
+        setTimeout(() => {
+          resolve('resolved');
+        }, s);
+      });
+    },
+    placePixelInSection(key, color) {
+      const x = key % store.gridXX;
+      const y = Math.floor(key / store.gridXX);
+      const xSec = Math.floor(x / store.ss)
+      const ySec = Math.floor(y / store.ss)
+      let i = xSec + ((store.gridXX / store.ss) * ySec)
+      this.gridSections[i].setPixel(key, color)
     },
     drawPixel(p5, x,y, c) {
       p5.strokeWeight(0)
       p5.fill(c)
-      p5.square(x, y, this.s)
+      p5.square(x, y, store.s)
     },
     drawTempPixel(p5, x, y, c) {
       p5.strokeWeight(0)
       p5.fill(c)
-      p5.square(x + (this.s / 4), y + (this.s / 4), (this.s / 2))
+      p5.square(x + (store.s / 4), y + (store.s / 4), (store.s / 2))
     },
     drawHoverPixel(p5, x, y, c) {
       p5.strokeWeight(0)
       p5.fill(c)
-      p5.square(x + (this.s / 3), y + (this.s / 3), (this.s / 3))
+      p5.square(x + (store.s / 3), y + (store.s / 3), (store.s / 3))
     },
     placePixel(x,y) {
-      x = x / this.s
-      y = y / this.s
+      x = x / store.s
+      y = y / store.s
       this.pp(x,y)
     },
     spp(x,y,c) {
@@ -316,7 +360,7 @@ export default {
     },
     pp(x, y) {
       let c = this.rgbToHex(this.c.levels)
-      this.tempPixels[x + (this.gridXX * y)] = c;
+      this.tempPixels[x + (store.gridXX * y)] = c;
       const bodyFormData = new FormData()
       bodyFormData.append('x', x)
       bodyFormData.append('y', y)
@@ -345,22 +389,16 @@ export default {
     hasToken() {
       return store.token != ''
     },
-    gridXX () {
-      return this.screen.x / this.s
-    } ,
-    gridYY () {
-      return this.screen.y / this.s
-    },
     boundingBox() {
       const offX = -this.screenOffset.x / this.sf
       const offY = -this.screenOffset.y / this.sf
       const offDiffX = (this.center.x*2 - this.screenOffset.x) / this.sf
       const offDiffY = (this.center.y*2 - this.screenOffset.y) / this.sf
       return {
-        l: (offX / this.s) - 1,
-        r: (offDiffX / this.s) + 1,
-        t: (offY / this.s) - 1,
-        b: (offDiffY / this.s) + 1,
+        l: Math.max(Math.floor(offX / store.s / store.ss) - 1, 0),
+        r: Math.min(Math.floor(offDiffX / store.s / store.ss) + 1, 10),
+        t: Math.max(Math.floor(offY / store.s/ store.ss) - 1, 0),
+        b: Math.min(Math.floor(offDiffY / store.s/ store.ss) + 1, 10)
       }
     }
   }
