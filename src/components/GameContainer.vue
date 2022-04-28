@@ -74,13 +74,23 @@ export default {
             this.placePixelInSection(key, response.data[key])
           }
         }
-        
+        for(let i = 0; i < this.gridSections.length; i++) {
+          // const x = i % g
+          // const y = Math.floor(i / g);
+          // if(bb.l <= x && bb.r >= x && bb.t <= y && bb.b >= y) {
+            // if(i == 1)
+            this.gridSections[i].draw()
+          // }
+        }
         this.$refs.p5vue.finishedLoading()
       })
 
     window.Echo.channel("pixel-change").listen('PixelEvent', (e) => {
-      let i = parseInt(e.x) + (store.gridXX * parseInt(e.y))
-      this.placePixelInSection(i, e.color)
+      let x = parseInt(e.x);
+      let y = parseInt(e.y);
+      let i = x + (store.gridXX * y)
+
+      this.drawPixel(x, y, e.color)
       if(this.tempPixels[i] != undefined) {
         delete this.tempPixels[i]
       }
@@ -154,8 +164,8 @@ export default {
     setup(p5) {
       // p5.rectMode(p5.CENTER);
       this.c = p5.color('#ffffff')
-      
       this.canvas = p5.createCanvas(p5.windowWidth, p5.windowHeight);
+      p5.noSmooth()
       p5.resizeCanvas(p5.windowWidth,p5.windowHeight)
       this.center.x = p5.windowWidth / 2;
       this.center.y = (p5.windowHeight) / 2;
@@ -189,48 +199,22 @@ export default {
     draw (p5) {
       //drag canvas
       if(this.mouseDown) {
-        // store the offset and divide by the scale factor to keep constant speed while dragging 
         this.screenOff.x = (p5.mouseX - this.grab.x)  / this.sf
         this.screenOff.y = (p5.mouseY - this.grab.y) / this.sf
-
-        // don't update points if the user is dragging
-        if(Math.abs(this.grab.startX - p5.mouseX) > 1 || Math.abs(this.grab.startY - p5.mouseY) > 1) {
-          this.update.points = false
-        }
       }
       let sfChange = this.sf - this.oldSf
       this.screenOffset.x = this.screenOff.x - ((-this.screenOff.x + this.center.x) * sfChange)
       this.screenOffset.y = this.screenOff.y - ((-this.screenOff.y + this.center.y) * sfChange)
-      if(sfChange > 0.01) {
-        this.update.points = false
-      }
+
       p5.translate(this.screenOffset.x, this.screenOffset.y)
       p5.scale(this.sf);
 
       // draw grid
       p5.background(0);
-      p5.fill(255)
-      p5.rect(0, 0, store.screen.x, store.screen.y);
+      p5.rect(0, 0, 1000, 1000);
 
-      p5.stroke(220)
-      p5.strokeWeight(1)
-      for(let x = 0; x < store.screen.x / store.s ;x++) {
-        p5.line(x * store.s, 0, x * store.s, store.screen.y);
-      }
-      for(let y = 0; y < store.screen.y / store.s ;y++) {
-        p5.line(0, y * store.s, store.screen.y, y * store.s);
-      }
-      const bb = this.boundingBox
-      const g = store.gridXX / store.ss
-      // draw pixels
-      if(this.update.points) {
-        for(let i = 0; i < this.gridSections.length; i++) {
-          const x = i % g
-          const y = Math.floor(i / g);
-          if(bb.l <= x && bb.r >= x && bb.t <= y && bb.b >= y) {
-            this.gridSections[i].draw()
-          }
-        }
+      for(let i = 0; i < this.gridSections.length; i++) {
+          this.gridSections[i].updatePosition()
       }
 
       if(this.update.preview) {
@@ -243,23 +227,30 @@ export default {
             const y = Math.floor(key / store.gridXX);
 
             // only render if in bounding box
-            if(bb.l < x && bb.r > x && bb.t < y && bb.b > y) {
-              this.drawTempPixel(p5, x * store.s, y * store.s, color)
-            }
+            this.drawTempPixel(p5, x, y, color)
           }
         }
       }
 
-      let ratioX = (p5.mouseX - this.screenOffset.x)/ this.sf
-      let ratioY = (p5.mouseY - this.screenOffset.y)/ this.sf
+      // mouse position
+      let ratioX = (p5.mouseX - this.screenOffset.x)
+      let ratioY = (p5.mouseY - this.screenOffset.y)
+      // mouse position on grid
+      let gridX = Math.floor(ratioX / this.sf)
+      let gridY = Math.floor(ratioY / this.sf)
+      // mouse position for tiles
+      let tileX = Math.floor(ratioX / store.ss / this.sf)
+      let tileY = Math.floor(ratioY / store.ss / this.sf)
 
-      let gridX = (ratioX - (ratioX % store.s))
-      let gridY = (ratioY - (ratioY % store.s))
-      if(gridX < 0 || gridX > store.screen.x || gridY < 0 || gridY > store.screen.y) {
+      
+      if(tileX < 0 || tileX > store.tileSize || tileY < 0 || tileY > store.tileSize) {
         return;
       } else {
+        //let i = tileX + (10 * tileY)
+        //this.gridSections[i].drawPreviewPixel(gridX, gridY, p5.color(store.selectedColor))
         this.c = p5.color(store.selectedColor)
         this.drawHoverPixel(p5, gridX, gridY, this.c)
+
       }
       
     },
@@ -290,28 +281,29 @@ export default {
             )
           return
         }
+        // mouse position
+        let ratioX = (p5.mouseX - this.screenOffset.x)
+        let ratioY = (p5.mouseY - this.screenOffset.y)
+        // mouse position on grid
+        let gridX = Math.floor(ratioX / this.sf)
+        let gridY = Math.floor(ratioY / this.sf)
 
-        let ratioX = (p5.mouseX - this.screenOffset.x)/ this.sf
-        let ratioY = (p5.mouseY - this.screenOffset.y)/ this.sf
-
-        let gridX = (ratioX - (ratioX % store.s))
-        let gridY = (ratioY - (ratioY % store.s))
         if(gridX < 0 || gridX > store.screen.x || gridY < 0 || gridY > store.screen.y) {
           return;
         } else {
           this.c = p5.color(store.selectedColor)
-          this.placePixel(gridX, gridY)
+          this.pp(gridX, gridY)
         }
       }
     },
     scroll(e) {
-      this.update.points = false
+      // this.update.points = false
       if (e.deltaY > 0) {
         this.sf *= 1.05;
       } else {
         this.sf *= 0.95;
       }
-      this.endScroll()
+      //this.endScroll()
     },
     async endScroll() {
       await this.waitfor(100);
@@ -325,32 +317,28 @@ export default {
       });
     },
     placePixelInSection(key, color) {
-      const x = key % store.gridXX;
-      const y = Math.floor(key / store.gridXX);
+      const x = key % store.gridXX
+      const y = Math.floor(key / store.gridXX)
       const xSec = Math.floor(x / store.ss)
       const ySec = Math.floor(y / store.ss)
       let i = xSec + ((store.gridXX / store.ss) * ySec)
       this.gridSections[i].setPixel(key, color)
     },
-    drawPixel(p5, x,y, c) {
-      p5.strokeWeight(0)
-      p5.fill(c)
-      p5.square(x, y, store.s)
+    drawPixel(x, y, c) {
+      const xSec = Math.floor(x / store.ss)
+      const ySec = Math.floor(y / store.ss)
+      let i = xSec + (store.tileSize * ySec)
+      this.gridSections[i].drawPixel(x, y, c)
     },
     drawTempPixel(p5, x, y, c) {
       p5.strokeWeight(0)
       p5.fill(c)
-      p5.square(x + (store.s / 4), y + (store.s / 4), (store.s / 2))
+      p5.square(x + (1 / 4), y + (1 / 4), (1 / 2))
     },
     drawHoverPixel(p5, x, y, c) {
       p5.strokeWeight(0)
       p5.fill(c)
-      p5.square(x + (store.s / 3), y + (store.s / 3), (store.s / 3))
-    },
-    placePixel(x,y) {
-      x = x / store.s
-      y = y / store.s
-      this.pp(x,y)
+      p5.square(x + (1/3), y + (1/3), 1/3)
     },
     spp(x,y,c) {
       this.c = this.p5.color(c)

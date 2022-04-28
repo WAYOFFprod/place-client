@@ -9,6 +9,7 @@ export const store = reactive({
   s: 20, // pixel per "pixel" / scale
   ss: 100, // pixel per section
   gridXX: 1000, // grid size
+  tileSize: 10,
   token: localStorage.getItem('id_token') || '',
   isFinishedConnecting: false,
   isLoggedIn: false,
