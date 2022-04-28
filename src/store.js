@@ -73,7 +73,7 @@ export const store = reactive({
   },
   swatches: [
     "#000000",
-    "#FFFFFF"
+    "#ffffff"
   ],
   pixelArray: '[0,0,0,0,0],\n' +
     "[0,0,1,0,0],\n" +
