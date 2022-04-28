@@ -28,3 +28,19 @@ npm run lint
 VUE_APP_WEBSOCKET_KEY='websocket-unique-key'
 VUE_APP_WEBSOCKET_SERVER='ip.of.websocket.server'
 ```
+
+
+#### notes for pi server:
+
+```
+cp -r ./dist/* /var/www/html
+```
+or 
+```
+npm run move
+```
+
+when running build on pi run this first
+```
+export NODE_OPTIONS=--openssl-legacy-provider
+```

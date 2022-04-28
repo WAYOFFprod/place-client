@@ -7,10 +7,7 @@
             class="color-picker"
             :show-alpha="false"
             v-model:value="store.selectedColor"
-            :swatches="[
-              '#FFFFFF',
-              '#000000',
-            ]"
+            :swatches="store.swatches"
             :modes="['hex']"
             size="large"
           />

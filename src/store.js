@@ -52,6 +52,7 @@ export const store = reactive({
     localStorage.setItem('store_position', JSON.stringify(this.start))
     localStorage.setItem('start_offset', JSON.stringify(this.offset))
     localStorage.setItem('selected_color_list', JSON.stringify(this.selectedColorList))
+    localStorage.setItem('swatch_history', JSON.stringify(this.swatches))
   },
   loadScriptData() {
     if(localStorage.getItem('pixel_array') != null) {
@@ -66,7 +67,14 @@ export const store = reactive({
     if(localStorage.getItem('selected_color_list')!= null) {
       this.selectedColorList = JSON.parse(localStorage.getItem('selected_color_list'))
     }
+    if(localStorage.getItem('swatch_history')!= null) {
+      this.selectedColorList = JSON.parse(localStorage.getItem('swatch_history'))
+    }
   },
+  swatches: [
+    "#000000",
+    "#FFFFFF"
+  ],
   pixelArray: '[0,0,0,0,0],\n' +
     "[0,0,1,0,0],\n" +
     "[0,1,1,1,0],\n" +
