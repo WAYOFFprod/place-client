@@ -292,6 +292,7 @@ export default {
           return;
         } else {
           this.c = p5.color(store.selectedColor)
+          store.colorSelected()
           this.pp(gridX, gridY)
         }
       }
@@ -325,20 +326,10 @@ export default {
       this.gridSections[i].setPixel(key, color)
     },
     drawPixel(x, y, c) {
-      this.colorSelected(c)
       const xSec = Math.floor(x / store.ss)
       const ySec = Math.floor(y / store.ss)
       let i = xSec + (store.tileSize * ySec)
       this.gridSections[i].drawPixel(x, y, c)
-    },
-    colorSelected(value) {
-      if(store.swatches.includes(value)) {
-        return
-      }
-      if(store.swatches.length > 15) {
-        store.swatches.splice(2, 1);
-      }
-      store.swatches.push(value)
     },
     drawTempPixel(p5, x, y, c) {
       p5.strokeWeight(0)

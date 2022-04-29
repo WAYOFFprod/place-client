@@ -71,6 +71,15 @@ export const store = reactive({
       this.selectedColorList = JSON.parse(localStorage.getItem('swatch_history'))
     }
   },
+  colorSelected() {
+    if(this.swatches.includes(this.selectedColor)) {
+      return
+    }
+    if(this.swatches.length > 15) {
+      this.swatches.splice(2, 1);
+    }
+    this.swatches.push(this.selectedColor)
+  },
   swatches: [
     "#000000",
     "#ffffff"
