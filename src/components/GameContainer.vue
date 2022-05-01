@@ -10,6 +10,9 @@
         @mousePressed="mousePressed"
         @mouseReleased="mouseReleased"
         @scroll="scroll"
+        @pinchStart="pinchStart"
+        @pinchScale="pinchScale"
+        @pinchStop="pinchStop"
       />
       <CanvasOverlay 
         @spp="spp"
@@ -110,6 +113,11 @@ export default {
       pixels: [],
       tempPixels: [],
       speed: 2,
+      touchScaleStart: 1,
+      pinchCenter: {
+        x: 0,
+        y: 0
+      },
       screenOff: {
         x: 0,
         y: 0
@@ -296,6 +304,21 @@ export default {
           this.pp(gridX, gridY)
         }
       }
+    },
+    pinchStart(touches) {
+      this.touchScaleStart = Math.sqrt(Math.pow(touches[0].screenX - touches[1].screenX, 2) + Math.pow(touches[0].screenY - touches[1].screenY, 2))
+      this.pinchCenter.x = (touches[0].screenX + touches[1].screenX) / 2
+      this.pinchCenter.y = (touches[0].screenY + touches[1].screenY) / 2
+    },
+    pinchScale(touches) {
+      let touchDist = Math.sqrt(Math.pow(touches[0].screenX - touches[1].screenX, 2) + Math.pow(touches[0].screenY - touches[1].screenY, 2))
+      let diff = this.touchScaleStart / touchDist
+      this.sf = ((1 - diff) + 1) * this.sf
+      this.touchScaleStart = touchDist
+    },
+    pinchStop(touch) {
+      console.log(touch.screenX, touch.screenY)
+      // console.log(this.p5.mouseX, this.p5.mouseY)
     },
     scroll(e) {
       // this.update.points = false

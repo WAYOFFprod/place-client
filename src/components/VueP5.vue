@@ -11,7 +11,8 @@ export default {
     return {
       color: [0, 255, 0],
       p5: null,
-      isLoading: true
+      isLoading: true,
+      isPinch: false,
     }
   },
   methods: {
@@ -43,46 +44,74 @@ export default {
       }
 
       p5.touchStarted = (e) => {
-        if(e.path[0].classList.contains('p5Canvas')) { // only pass event if scroll is on top of canvas
-          console.log(e);
-          t.$emit('mousePressed', p5);
+        if(e.target.classList.contains('p5Canvas')) { // only pass event if scroll is on top of canvas
+          if(e.touches.length == 1) {
+            t.$emit('mousePressed', p5)
+          } else if(e.touches.length > 1) {
+            t.$emit('pinchStart', e.touches)
+            t.isPinch = true
+          }
         }
       }
-
-      p5.touchEnded = (e) => {
-        if(e.path[0].classList.contains('p5Canvas')) { // only pass event if scroll is on top of canvas
-          t.$emit('mouseReleased', p5);
+      p5.touchMoved = (e) => {
+        if(e.target.classList.contains('p5Canvas')) { // only pass event if scroll is on top of canvas
+          if(e.touches.length > 1) {
+            t.$emit('pinchScale', e.touches)
+          }
         }
+      }
+      p5.touchEnded = (e) => {
+        //if(e.target.classList.contains('p5Canvas')) { // only pass event if scroll is on top of canvas
+        console.log(e.touches.length)
+          if(e.touches.length == 0) {
+            if(t.isPinch) {
+              t.$emit('mouseReleased', p5);
+            } else {
+              t.isPinch = false
+            }
+          } else if(e.touches.length == 1) {
+            console.log(e)
+            t.$emit('pinchStop', e.touches[0])
+          }
+        //}
       }
 
       p5.mousePressed = (e) => {
-        if(e.path[0].classList.contains('p5Canvas')) { // only pass event if scroll is on top of canvas
+        if(e.target.classList.contains('p5Canvas')) { // only pass event if scroll is on top of canvas
           t.$emit('mousePressed', p5);
         }
       }
 
       p5.mouseReleased = (e) => {
-        if(e.path[0].classList.contains('p5Canvas')) { // only pass event if scroll is on top of canvas
+        if(e.target.classList.contains('p5Canvas')) { // only pass event if scroll is on top of canvas
           t.$emit('mouseReleased', p5);
         }
       }
 
       p5.keyReleased = (e) => {
-        if(e.path[0].classList.contains('p5Canvas')) { // only pass event if scroll is on top of canvas
+        if(e.target.classList.contains('p5Canvas')) { // only pass event if scroll is on top of canvas
           t.$emit('keyReleased', p5);
         }
       }
       window.addEventListener("wheel", function(e) {
         e.preventDefault();
-        if(e.path[0].classList.contains('p5Canvas')) { // only pass event if scroll is on top of canvas
+        if(e.target.classList.contains('p5Canvas')) { // only pass event if scroll is on top of canvas
           t.$emit('scroll', e); 
         }
       }, { passive: false });
       p5.mouseDragged = (e) => {
-        if(e.path[0].classList.contains('p5Canvas')) { // only pass event if scroll is on top of canvas
+        if(e.target.classList.contains('p5Canvas')) { // only pass event if scroll is on top of canvas
           t.$emit('mouseDragged', p5);
         }
       }
+      document.addEventListener('gesturestart', function(e) {
+        e.preventDefault();
+        return false;
+      });
+      document.addEventListener('gesturechange', function(e) {
+        e.preventDefault();
+        return false;
+      });
     }
     // NOTE: Use p5 as an instance mode
     new P5(script, 'p5-canvas')
