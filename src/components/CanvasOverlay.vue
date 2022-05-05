@@ -1,26 +1,26 @@
 <template>
   <div class="static-container">
-    <n-space :size="24" align="center" v-if="store.isFinishedConnecting">
+    <n-space :size="24" align="center" v-if="sessionStore.isFinishedConnecting">
       <n-space vertical :size="3">
         <div class="gap" />
         <n-color-picker
             class="color-picker"
             :show-alpha="false"
-            v-model:value="store.selectedColor"
-            :swatches="store.swatches"
+            :swatches="scriptStore.swatches"
+            v-model:value="scriptStore.selectedColor"
             :modes="['hex']"
             size="large"
           />
       </n-space>
       <n-space vertical :size="3">
         <div class="gap" />
-        <n-button type="primary" @click="store.toggledrawer()">
+        <n-button type="primary" @click="UIStore.toggledrawer()">
           {{ buttonLabel }}
         </n-button>
       </n-space>
       <n-space vertical :size="3">
         <div class="gap" />
-        <n-button v-if="store.isLoggedIn" type="primary" @click="store.toggleScriptDrawer()">
+        <n-button v-if="sessionStore.isLoggedIn" type="primary" @click="UIStore.toggleScriptDrawer()">
           SCRIPT
         </n-button>
       </n-space>
@@ -28,14 +28,20 @@
         ref="scriptPlayer"
         @spp="spp"
       />
+      <n-space vertical :size="3">
+        <div class="gap" />
+        <n-button type="primary" @click="toggleMode()">
+          {{mode}}
+        </n-button>
+      </n-space>
     </n-space>
   </div>
 </template>
 
 <script>
-import { store } from './../store.js'
+import { sessionStore, UIStore, scriptStore } from './../store.js'
 import ScriptPlayer from './ScriptPlayer.vue'
-import {NButton, NSpace, NColorPicker} from 'naive-ui'
+import { NButton, NSpace, NColorPicker } from 'naive-ui'
 export default {
   components: {
     ScriptPlayer,
@@ -45,20 +51,33 @@ export default {
   },
   data () {
     return {
-      store,
+      sessionStore,
+      scriptStore,
+      UIStore,
+      pixelViewerMode: false,
     }
   },
   methods: {
     spp(x,y,c) {
       this.$emit("spp" ,x ,y, c)
+    },
+    toggleMode() {
+      this.pixelViewerMode = !this.pixelViewerMode
     }
   },
   computed: {
     buttonLabel() {
-      if(store.isLoggedIn) {
+      if(sessionStore.isLoggedIn) {
         return "COLORS"
       } else {
         return "LOGIN/REGISTER"
+      }
+    },
+    mode() {
+      if(this.pixelViewerMode) {
+        return "Pixel Viewer"
+      } else {
+        return "Pixel Placer"
       }
     }
   }

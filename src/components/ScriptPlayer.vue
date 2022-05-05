@@ -19,7 +19,7 @@
 </template>
 
 <script>
-import { store } from './../store.js'
+import { canvasStore, UIStore, scriptStore } from './../store.js'
 import { NProgress, NIcon, NButton, NSpace} from 'naive-ui'
 import Play16Regular from '@vicons/fluent/Play16Regular'
 import {useDialog} from 'naive-ui'
@@ -34,7 +34,9 @@ export default {
   },
   data () {
     return {
-      store,
+      canvasStore,
+      UIStore,
+      scriptStore,
       seconds: 0,
       percentage: 0, 
       isPaused: true,
@@ -50,7 +52,7 @@ export default {
     }
   },
   created() {
-    store.loadScriptData()
+    UIStore.loadScriptData()
     this.emitter.on('preview', () => {
       this.preview()
     })
@@ -70,17 +72,17 @@ export default {
     },
     setup() {
       this.colors = []
-      for (let i = 0; i < store.selectedColorList.length; i++) {
-        const element = store.selectedColorList[i]
+      for (let i = 0; i < scriptStore.selectedColorList.length; i++) {
+        const element = scriptStore.selectedColorList[i]
         this.colors.push(element.color)
       }
-      this.sp.x = store.start.x
-      this.sp.y = store.start.y
+      this.sp.x = scriptStore.start.x
+      this.sp.y = scriptStore.start.y
 
-      this.parseJson("["+store.pixelArray+"]")
+      this.parseJson("["+scriptStore.pixelArray+"]")
       let ok = this.validate()
       if(ok) {
-        store.saveScriptData()
+        scriptStore.saveScriptData()
       }
       return ok
     },
@@ -98,7 +100,7 @@ export default {
             content: 'Can\'t have that!',
             positiveText: 'Ok!',
             onPositiveClick: () => {
-              store.isScriptDrawerOpen = true
+              UIStore.isScriptDrawerOpen = true
             }
           })
           return false
@@ -109,7 +111,7 @@ export default {
             content: 'Can\'t have that!',
             positiveText: 'Ok!',
             onPositiveClick: () => {
-              store.isScriptDrawerOpen = true
+              UIStore.isScriptDrawerOpen = true
             }
           })
           return false
@@ -129,7 +131,7 @@ export default {
             content: 'Make sure you didn\'t forget anything',
             positiveText: 'Ok!',
             onPositiveClick: () => {
-              store.isScriptDrawerOpen = true
+              UIStore.isScriptDrawerOpen = true
             }
           })
         }
@@ -140,9 +142,9 @@ export default {
     preview() {
       this.setup()
       for(let y = 0; y < this.pixels.length; y++) {
-        if(y < store.offset.y) continue
+        if(y < scriptStore.offset.y) continue
         for(let x = 0; x < this.pixels[y].length; x++) {
-          if(x < store.offset.x && y == store.offset.y) continue
+          if(x < scriptStore.offset.x && y == scriptStore.offset.y) continue
           if(this.pixels[y][x] < 0) continue
           const c = this.colors[this.pixels[y][x]] // get hex string
           this.emitter.emit('addToPreview', {x: this.sp.x + x, y: this.sp.y + y, c: c})
@@ -153,9 +155,9 @@ export default {
     clear() {
       this.setup()
       for(let y = 0; y < this.pixels.length; y++) {
-        if(y < store.offset.y) continue
+        if(y < scriptStore.offset.y) continue
         for(let x = 0; x < this.pixels[y].length; x++) {
-          if(x < store.offset.x && y == store.offset.y) continue
+          if(x < scriptStore.offset.x && y == scriptStore.offset.y) continue
           const c = this.colors[this.pixels[y][x]] // get hex string
           this.emitter.emit('clearPreview', {x: this.sp.x + x, y: this.sp.y + y, c: c})
         }
@@ -171,21 +173,21 @@ export default {
       let isvalid = this.setup()
       if(!isvalid) return
       
-      let size = this.pixels.length * this.pixels[0].length - (store.offset.x + store.offset.y + (store.offset.x * store.offset.y))
+      let size = this.pixels.length * this.pixels[0].length - (scriptStore.offset.x + scriptStore.offset.y + (scriptStore.offset.x * scriptStore.offset.y))
       let count = 0
       for(let y = 0; y < this.pixels.length; y++) {
-        if(y < store.offset.y) continue
+        if(y < scriptStore.offset.y) continue
         for(let x = 0; x < this.pixels[y].length; x++) {
           if(!this.isStarted) return // stop function
-          if(x < store.offset.x && y == store.offset.y) continue
+          if(x < scriptStore.offset.x && y == scriptStore.offset.y) continue
           if(this.pixels[y][x] < 0) continue
           count++
           while(this.isPaused) {
             await this.sleep(1000);
             if(!this.isStarted) return // stop function
           }
-          store.offset.x = x
-          store.offset.y = y
+          scriptStore.offset.x = x
+          scriptStore.offset.y = y
           
           this.percentage = Math.round((count / size) * 100)
           const c = this.colors[this.pixels[y][x]] // get hex string
@@ -195,8 +197,8 @@ export default {
       }
       this.isPaused = true;
       this.isStarted = false
-      store.offset.x = 0
-      store.offset.y = 0
+      scriptStore.offset.x = 0
+      scriptStore.offset.y = 0
     },
     sleep(milliseconds) {
       return new Promise((resolve) => setTimeout(resolve, milliseconds));

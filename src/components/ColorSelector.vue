@@ -1,17 +1,17 @@
 <template>
   <n-space :size="3" justify="center">
     <color-swatch 
-      v-for="color in store.colors"
+      v-for="color in canvasStore.colors"
       :key="color" 
       :color="color" 
-      :isDisabled="color == store.selectedColor"
+      :isDisabled="color == canvasStore.selectedColor"
       @colorSelected="colorSelected"
     />
   </n-space>
 </template>
 
 <script>
-import { store } from './../store.js'
+import { canvasStore } from './../store.js'
 import { NSpace } from 'naive-ui'
 import ColorSwatch from './ColorSwatch.vue'
 
@@ -22,7 +22,7 @@ export default {
   },
   data() {
     return {
-      store,
+      canvasStore,
     }
   },
   mounted () {
@@ -30,7 +30,7 @@ export default {
   },
   methods: {
     colorSelected(c) {
-      this.store.selectedColor = c
+      this.canvasStore.selectedColor = c
     }
   },
   computed: {
