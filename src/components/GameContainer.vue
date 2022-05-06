@@ -116,10 +116,6 @@ export default {
       tempPixels: [],
       speed: 2,
       touchScaleStart: 1,
-      pinchCenter: {
-        x: 0,
-        y: 0
-      },
       screenOff: {
         x: 0,
         y: 0
@@ -218,6 +214,7 @@ export default {
     draw (p5) {
       //drag canvas
       if(this.mouseDown) {
+        console.log(this.mouseDown)
         this.screenOff.x = (p5.mouseX - this.grab.x)  / this.sf
         this.screenOff.y = (p5.mouseY - this.grab.y) / this.sf
       }
@@ -351,9 +348,9 @@ export default {
       }
     },
     pinchStart(touches) {
+      this.mouseDown = false
+      // get center point between two fingers
       this.touchScaleStart = Math.sqrt(Math.pow(touches[0].screenX - touches[1].screenX, 2) + Math.pow(touches[0].screenY - touches[1].screenY, 2))
-      this.pinchCenter.x = (touches[0].screenX + touches[1].screenX) / 2
-      this.pinchCenter.y = (touches[0].screenY + touches[1].screenY) / 2
     },
     pinchScale(touches) {
       let touchDist = Math.sqrt(Math.pow(touches[0].screenX - touches[1].screenX, 2) + Math.pow(touches[0].screenY - touches[1].screenY, 2))
@@ -363,7 +360,7 @@ export default {
     },
     pinchStop(touch) {
       console.log(touch.screenX, touch.screenY)
-      // console.log(this.p5.mouseX, this.p5.mouseY)
+      console.log(this.p5.mouseX, this.p5.mouseY)
     },
     scroll(e) {
       // this.update.points = false
