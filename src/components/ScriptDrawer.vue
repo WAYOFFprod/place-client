@@ -32,7 +32,7 @@
               <n-scrollbar y-scrollable>
                 <n-dynamic-input v-model:value="scriptStore.selectedColorList" :on-create="onCreateColor">
                   <template #create-button-default>
-                    Add whatever you want
+                    {{value}}
                   </template>
                   <template #default="{ value }">
                     <!-- <n-input v-model:value="value.id" type="text" /> -->

@@ -26,7 +26,6 @@ export default {
   },
   methods: {
     click() {
-      console.log(this);
       this.$emit('colorSelected', this.color);
     }
   }

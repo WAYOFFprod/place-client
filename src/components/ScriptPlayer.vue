@@ -52,7 +52,7 @@ export default {
     }
   },
   created() {
-    UIStore.loadScriptData()
+    scriptStore.loadScriptData()
     this.emitter.on('preview', () => {
       this.preview()
     })

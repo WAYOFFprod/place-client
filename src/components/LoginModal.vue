@@ -148,7 +148,6 @@ export default {
       this.HTTP
         .get('me', { headers: {"Authorization" : 'Bearer ' + sessionStore.token}})
         .then(response => {
-          console.log(response.data)
           sessionStore.setUser(response.data)
           sessionStore.isFinishedConnecting = true
           sessionStore.isLoggedIn = true
@@ -167,7 +166,7 @@ export default {
       this.HTTP
         .post('login', bodyFormData)
         .then(response => {
-          console.log(response.data)
+          UIStore.messagePlacement = 'top'
           this.sessionStore.setToken(response.data.access_token)
           this.errorMessage.info(
             "Welcome back",
@@ -175,11 +174,11 @@ export default {
               keepAliveOnHover: true
             }
           )
+          
           this.getUserData();
           UIStore.closeModal()
         })
         .catch(error => {
-          console.log(error)
           this.errorMessage.error(
             error.response.data.message,
             {
@@ -206,6 +205,7 @@ export default {
         .post('register', bodyFormData)
         .then(response => {
           this.sessionStore.setToken(response.data.access_token)
+          UIStore.messagePlacement = 'top'
           this.errorMessage.info(
             "Welcome, you can start placing pixels",
             {

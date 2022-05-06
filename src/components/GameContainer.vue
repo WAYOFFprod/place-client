@@ -28,7 +28,7 @@ import ScriptDrawer from './ScriptDrawer.vue'
 import MenuDrawer from './MenuDrawer.vue'
 import CanvasOverlay from './CanvasOverlay.vue'
 //mport VueAxios from './VueAxios.vue'
-import { canvasStore, sessionStore } from './../store.js'
+import { canvasStore, sessionStore, UIStore } from './../store.js'
 import LoginModal from './LoginModal.vue'
 import VueAxios from './common/http-common'
 import GridSection from './common/GridSection.js'
@@ -101,6 +101,7 @@ export default {
       p5: null,
       canvasStore,
       sessionStore,
+      UIStore,
       gridSections: [],
       grab: {
         x: 0,
@@ -155,7 +156,16 @@ export default {
       update: {
         points: true,
         preview: true
-      }
+      },
+      pixelOwner: {},
+      hoverPixel: {
+        x:0,
+        y:0
+      },
+      hoverCount: 0,
+      getPixel: false,
+      messageReactive: undefined,
+      lastUpdate: new Date()
     }
   },
   methods: {
@@ -203,6 +213,7 @@ export default {
         this.screenOff.x = (p5.mouseX - this.grab.x)  / this.sf
         this.screenOff.y = (p5.mouseY - this.grab.y) / this.sf
       }
+
       let sfChange = this.sf - this.oldSf
       this.screenOffset.x = this.screenOff.x - ((-this.screenOff.x + this.center.x) * sfChange)
       this.screenOffset.y = this.screenOff.y - ((-this.screenOff.y + this.center.y) * sfChange)
@@ -253,7 +264,41 @@ export default {
         this.drawHoverPixel(p5, gridX, gridY, this.c)
 
       }
+
+      /* logic to display pixel placer name */
+      // check if pixel bellow mouse change
+      if(!(this.hoverPixel.x == gridX && this.hoverPixel.y == gridY)) {
+        if(this.hasPixel(gridX, gridY)) {
+          this.hoverPixel.x = gridX
+          this.hoverPixel.y = gridY
+          this.hoverCount = 0
+          this.getPixel = true
+        } else {
+          this.getPixel = false
+          this.closeTT()
+        }
+      }
       
+      // if there is a pixel bellow mouse update status of message...
+      if(this.getPixel) {
+        // .. based on how long you have been hovering over it
+        if(this.hoverCount == 60) {
+          this.getPixelOwner(gridX, gridY)
+          this.getPixel = false
+          this.hoverCount = 0
+        } else if(this.hoverCount == 1) {
+          this.loadNextPixelOwner(gridX, gridY)
+        }
+      }
+
+      this.hoverCount++
+
+      let now = new Date()
+      if(this.messageReactive != undefined) {
+        if((now.getTime() - this.lastUpdate.getTime()) / 1000 > 4) {
+          this.closeTT()
+        }
+      }
     },
     mousePressed (p5) {
       this.grab.startX = p5.mouseX
@@ -271,7 +316,6 @@ export default {
       this.mouseDown = false;
       let dragVector = p5.createVector(this.screenMove.x, this.screenMove.y);
       let ogVector = p5.createVector(p5.mouseX, p5.mouseY)
-      //console.log(dragVector.x, ogVector.x, dragVector.dist(ogVector))
       if(dragVector.dist(ogVector) < 5) {
         if(sessionStore.token == '') {
           this.message.info(
@@ -355,7 +399,6 @@ export default {
       bodyFormData.append('color', c)
       bodyFormData.append('user_id', sessionStore.user.id)
       bodyFormData.append('is_manual', isManual)
-      console.log(isManual, sessionStore.user.id)
       this.HTTP
         .post('pixels/add', bodyFormData, { headers: {"Authorization" : 'Bearer ' + sessionStore.token} })
         .then(response => {
@@ -364,6 +407,65 @@ export default {
         .catch(error => {
           console.log(error.message)
         })
+    },
+    displayPixelOwner() {
+      // check if we have value
+      let msg
+      let success
+      if(this.pixelOwner != "") {
+        msg = this.pixelOwner.name
+        success = "success"
+      } else {
+        msg = "Unknown"
+        success = "info"
+      }
+      if(this.messageReactive == undefined) {
+        UIStore.messagePlacement = 'bottom'
+        this.messageReactive = this.message.create(msg, {
+          type: success,
+          duration: 0,
+        });
+      } else {
+        this.messageReactive.type = success
+        this.messageReactive.content = msg
+      }
+    },
+    closeTT() {
+      if(this.messageReactive) {
+        this.messageReactive.destroy();
+        this.messageReactive =  undefined
+      }
+    },
+    hasPixel(x, y) {
+      let pI = x + (canvasStore.gridXX * y)
+      const xSec = Math.floor(x / canvasStore.ss)
+      const ySec = Math.floor(y / canvasStore.ss)
+      let i = xSec + ((canvasStore.gridXX / canvasStore.ss) * ySec)
+      return this.gridSections[i].hasPixelAtPosition(pI)
+    },
+    getPixelOwner(x, y) {
+      this.HTTP
+        .get('pixels/' + x + '/' + y)
+        .then(response => {
+          this.pixelOwner = response.data
+          this.displayPixelOwner()
+          this.lastUpdate = new Date()
+        })
+        .catch(error => {
+          console.log(error)
+        })
+    },
+    loadNextPixelOwner() {
+      if(this.messageReactive == undefined) {
+        UIStore.messagePlacement = 'bottom'
+        this.messageReactive = this.message.create('', {
+          type: 'loading',
+          duration: 0,
+        });
+      } else {
+        this.messageReactive.type = 'loading'
+      }
+      this.lastUpdate = new Date()
     },
     rgbToHex(c) {
       return "#" + this.componentToHex(c[0]) + this.componentToHex(c[1]) + this.componentToHex(c[2])

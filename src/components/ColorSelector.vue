@@ -26,11 +26,13 @@ export default {
     }
   },
   mounted () {
-    console.log("palette mounted")
+    console.log("mounted")
+    canvasStore.loadData()
   },
   methods: {
     colorSelected(c) {
-      this.canvasStore.selectedColor = c
+      canvasStore.selectedColor = c
+      canvasStore.saveData()
     }
   },
   computed: {

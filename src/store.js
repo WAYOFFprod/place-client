@@ -17,12 +17,21 @@ const canvasStore = reactive({
       this.swatches.splice(2, 1);
     }
     this.swatches.push(this.selectedColor)
+    this.saveData()
   },
   swatches: [
     "#000000",
     "#ffffff"
   ],
   selectedColor: '#000000',
+  saveData() {
+    localStorage.setItem('swatch_history', JSON.stringify(this.swatches))
+  },
+  loadData() {
+    if(localStorage.getItem('swatch_history') != null) {
+      this.swatches = JSON.parse(localStorage.getItem('swatch_history'))
+    }
+  },
   colors: [
     '#AA0000',
     '#AA5500',
@@ -127,11 +136,33 @@ const scriptStore = reactive({
     id: '1',
     color: '#ffffff'
   }],
+  isScriptRunning: false,
+  saveScriptData() {
+    localStorage.setItem('pixel_array', this.pixelArray)
+    localStorage.setItem('store_position', JSON.stringify(this.start))
+    localStorage.setItem('start_offset', JSON.stringify(this.offset))
+    localStorage.setItem('selected_color_list', JSON.stringify(this.selectedColorList))
+  },
+  loadScriptData() {
+    if(localStorage.getItem('pixel_array') != null) {
+      this.pixelArray = localStorage.getItem('pixel_array')
+    }
+    if(localStorage.getItem('store_position')!= null) {
+      this.start = JSON.parse(localStorage.getItem('store_position'))
+    }
+    if(localStorage.getItem('start_offset')!= null) {
+      this.offset = JSON.parse(localStorage.getItem('start_offset'))
+    }
+    if(localStorage.getItem('selected_color_list')!= null) {
+      this.selectedColorList = JSON.parse(localStorage.getItem('selected_color_list'))
+    }
+  }
 })
 
 const UIStore = reactive({
   isScriptDrawerOpen: false,
   isMenuDrawerOpen: false,
+  messagePlacement: 'bottom',
   toggledrawer() {
     this.isMenuDrawerOpen = !this.isMenuDrawerOpen;
   },
@@ -155,31 +186,6 @@ const UIStore = reactive({
     this.isModalOpen = false
     this.isLoginModalOpen = false
     this.isRegistrationModalOpen = false
-  },
-  isScriptRunning: false,
-  saveScriptData() {
-    localStorage.setItem('pixel_array', this.pixelArray)
-    localStorage.setItem('store_position', JSON.stringify(this.start))
-    localStorage.setItem('start_offset', JSON.stringify(this.offset))
-    localStorage.setItem('selected_color_list', JSON.stringify(this.selectedColorList))
-    localStorage.setItem('swatch_history', JSON.stringify(this.swatches))
-  },
-  loadScriptData() {
-    if(localStorage.getItem('pixel_array') != null) {
-      this.pixelArray = localStorage.getItem('pixel_array')
-    }
-    if(localStorage.getItem('store_position')!= null) {
-      this.start = JSON.parse(localStorage.getItem('store_position'))
-    }
-    if(localStorage.getItem('start_offset')!= null) {
-      this.offset = JSON.parse(localStorage.getItem('start_offset'))
-    }
-    if(localStorage.getItem('selected_color_list')!= null) {
-      this.selectedColorList = JSON.parse(localStorage.getItem('selected_color_list'))
-    }
-    if(localStorage.getItem('swatch_history')!= null) {
-      this.selectedColorList = JSON.parse(localStorage.getItem('swatch_history'))
-    }
   }
 })
 

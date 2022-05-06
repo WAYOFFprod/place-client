@@ -6,8 +6,8 @@
         <n-color-picker
             class="color-picker"
             :show-alpha="false"
-            :swatches="scriptStore.swatches"
-            v-model:value="scriptStore.selectedColor"
+            :swatches="canvasStore.swatches"
+            v-model:value="canvasStore.selectedColor"
             :modes="['hex']"
             size="large"
           />
@@ -28,18 +28,12 @@
         ref="scriptPlayer"
         @spp="spp"
       />
-      <n-space vertical :size="3">
-        <div class="gap" />
-        <n-button type="primary" @click="toggleMode()">
-          {{mode}}
-        </n-button>
-      </n-space>
     </n-space>
   </div>
 </template>
 
 <script>
-import { sessionStore, UIStore, scriptStore } from './../store.js'
+import { sessionStore, UIStore, canvasStore } from './../store.js'
 import ScriptPlayer from './ScriptPlayer.vue'
 import { NButton, NSpace, NColorPicker } from 'naive-ui'
 export default {
@@ -52,18 +46,17 @@ export default {
   data () {
     return {
       sessionStore,
-      scriptStore,
+      canvasStore,
       UIStore,
-      pixelViewerMode: false,
     }
+  },
+  mounted() {
+    canvasStore.loadData()
   },
   methods: {
     spp(x,y,c) {
       this.$emit("spp" ,x ,y, c)
     },
-    toggleMode() {
-      this.pixelViewerMode = !this.pixelViewerMode
-    }
   },
   computed: {
     buttonLabel() {
@@ -73,13 +66,6 @@ export default {
         return "LOGIN/REGISTER"
       }
     },
-    mode() {
-      if(this.pixelViewerMode) {
-        return "Pixel Viewer"
-      } else {
-        return "Pixel Placer"
-      }
-    }
   }
 }
 </script>
