@@ -61,4 +61,11 @@ export default class GridSection {
     this.pixels[i] = c
     this.draw()
   }
+  hasPixelAtPosition(i) {
+    if(this.pixels[i]) {
+      return true
+    } else {
+      return false
+    }
+  }
 }

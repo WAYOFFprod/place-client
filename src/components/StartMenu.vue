@@ -16,7 +16,7 @@
 
 <script>
 
-import  { store } from './../store.js'
+import  { UIStore } from './../store.js'
 import { NButton, NSpace } from 'naive-ui'; 
 import { useMessage, useDialog } from 'naive-ui'; 
 
@@ -29,7 +29,7 @@ export default {
     return {
       message: useMessage(),
       dialog: useDialog(),
-      store
+      UIStore
     }
   },
   mounted() {
@@ -38,10 +38,10 @@ export default {
   },
   methods: {
     register () {
-      this.store.openRegistration()
+      this.UIStore.openRegistration()
     },
     login() {
-      this.store.openLogin()
+      this.UIStore.openLogin()
     },
     handleConfirm() {
       this.dialog.warning({

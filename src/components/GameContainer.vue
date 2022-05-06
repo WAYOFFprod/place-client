@@ -31,7 +31,7 @@ import ScriptDrawer from './ScriptDrawer.vue'
 import MenuDrawer from './MenuDrawer.vue'
 import CanvasOverlay from './CanvasOverlay.vue'
 //mport VueAxios from './VueAxios.vue'
-import { store } from './../store.js'
+import { canvasStore, sessionStore, UIStore } from './../store.js'
 import LoginModal from './LoginModal.vue'
 import VueAxios from './common/http-common'
 import GridSection from './common/GridSection.js'
@@ -53,20 +53,20 @@ export default {
   },
   created() {
     this.emitter.on('addToPreview', (v) => {
-      let i = v.x + (store.gridXX * v.y)
+      let i = v.x + (canvasStore.gridXX * v.y)
       this.tempPixels[i] = v.c
     })
     this.emitter.on('clearPreview', (v) => {
-      let i = v.x + (store.gridXX * v.y)
+      let i = v.x + (canvasStore.gridXX * v.y)
       delete this.tempPixels[i]
     })
   },
   mounted() {
     this.$refs.p5vue.loading()
     this.p5 = this.$refs.p5vue.p5
-    for(let y = 0; y < store.gridXX / store.ss; y++) {
-      for(let x = 0; x < store.gridXX / store.ss; x++) {
-        this.gridSections.push(new GridSection(this.p5, x, y, store.ss, store.s, store.gridXX))
+    for(let y = 0; y < canvasStore.gridXX / canvasStore.ss; y++) {
+      for(let x = 0; x < canvasStore.gridXX / canvasStore.ss; x++) {
+        this.gridSections.push(new GridSection(this.p5, x, y, canvasStore.ss, canvasStore.s, canvasStore.gridXX))
       }
     }
     this.HTTP
@@ -91,7 +91,7 @@ export default {
     window.Echo.channel("pixel-change").listen('PixelEvent', (e) => {
       let x = parseInt(e.x);
       let y = parseInt(e.y);
-      let i = x + (store.gridXX * y)
+      let i = x + (canvasStore.gridXX * y)
 
       this.drawPixel(x, y, e.color)
       if(this.tempPixels[i] != undefined) {
@@ -102,7 +102,9 @@ export default {
   data () {
     return {
       p5: null,
-      store,
+      canvasStore,
+      sessionStore,
+      UIStore,
       gridSections: [],
       grab: {
         x: 0,
@@ -162,12 +164,21 @@ export default {
       update: {
         points: true,
         preview: true
-      }
+      },
+      pixelOwner: {},
+      hoverPixel: {
+        x:0,
+        y:0
+      },
+      hoverCount: 0,
+      getPixel: false,
+      messageReactive: undefined,
+      lastUpdate: new Date()
     }
   },
   methods: {
     changeColor(c) {
-      store.selectedColor = c
+      canvasStore.selectedColor = c
     },
     setup(p5) {
       // p5.rectMode(p5.CENTER);
@@ -178,7 +189,7 @@ export default {
       this.center.x = p5.windowWidth / 2;
       this.center.y = (p5.windowHeight) / 2;
 
-      let sgs = store.s * this.lg.size / 2
+      let sgs = canvasStore.s * this.lg.size / 2
       this.lg.x.min = this.center.x - sgs
       this.lg.x.max = this.center.x + sgs
       this.lg.y.min = this.center.y - sgs
@@ -193,11 +204,11 @@ export default {
       
       for(let x = 0; x < this.lg.size + 1; x++) {
         let move =  p5.sin(this.lg.a + (x * this.lg.delay)) * this.lg.amp
-        p5.line(this.lg.x.min + (x * store.s), move + this.lg.y.min, this.lg.x.min + (x * store.s), move + this.lg.y.max);
+        p5.line(this.lg.x.min + (x * canvasStore.s), move + this.lg.y.min, this.lg.x.min + (x * canvasStore.s), move + this.lg.y.max);
       }
       for(let y = 0; y < this.lg.size + 1;y++) {
         let move =  p5.sin(this.lg.a + (y * this.lg.delay)) * this.lg.amp
-        p5.line(move + this.lg.x.min,this.lg.y.min + + (y * store.s), move + this.lg.x.max, this.lg.y.min + (y * store.s));
+        p5.line(move + this.lg.x.min,this.lg.y.min + + (y * canvasStore.s), move + this.lg.x.max, this.lg.y.min + (y * canvasStore.s));
       }
       this.lg.a += p5.TWO_PI / s
 
@@ -210,6 +221,7 @@ export default {
         this.screenOff.x = (p5.mouseX - this.grab.x)  / this.sf
         this.screenOff.y = (p5.mouseY - this.grab.y) / this.sf
       }
+
       let sfChange = this.sf - this.oldSf
       this.screenOffset.x = this.screenOff.x - ((-this.screenOff.x + this.center.x) * sfChange)
       this.screenOffset.y = this.screenOff.y - ((-this.screenOff.y + this.center.y) * sfChange)
@@ -231,8 +243,8 @@ export default {
           if (Object.hasOwnProperty.call(this.tempPixels, key)) {
             const color = this.tempPixels[key];
 
-            const x = key % store.gridXX;
-            const y = Math.floor(key / store.gridXX);
+            const x = key % canvasStore.gridXX;
+            const y = Math.floor(key / canvasStore.gridXX);
 
             // only render if in bounding box
             this.drawTempPixel(p5, x, y, color)
@@ -247,20 +259,54 @@ export default {
       let gridX = Math.floor(ratioX / this.sf)
       let gridY = Math.floor(ratioY / this.sf)
       // mouse position for tiles
-      let tileX = Math.floor(ratioX / store.ss / this.sf)
-      let tileY = Math.floor(ratioY / store.ss / this.sf)
+      let tileX = Math.floor(ratioX / canvasStore.ss / this.sf)
+      let tileY = Math.floor(ratioY / canvasStore.ss / this.sf)
 
       
-      if(tileX < 0 || tileX > store.tileSize || tileY < 0 || tileY > store.tileSize) {
+      if(tileX < 0 || tileX > canvasStore.tileSize || tileY < 0 || tileY > canvasStore.tileSize) {
         return;
       } else {
         //let i = tileX + (10 * tileY)
         //this.gridSections[i].drawPreviewPixel(gridX, gridY, p5.color(store.selectedColor))
-        this.c = p5.color(store.selectedColor)
+        this.c = p5.color(canvasStore.selectedColor)
         this.drawHoverPixel(p5, gridX, gridY, this.c)
 
       }
+
+      /* logic to display pixel placer name */
+      // check if pixel bellow mouse change
+      if(!(this.hoverPixel.x == gridX && this.hoverPixel.y == gridY)) {
+        if(this.hasPixel(gridX, gridY)) {
+          this.hoverPixel.x = gridX
+          this.hoverPixel.y = gridY
+          this.hoverCount = 0
+          this.getPixel = true
+        } else {
+          this.getPixel = false
+          this.closeTT()
+        }
+      }
       
+      // if there is a pixel bellow mouse update status of message...
+      if(this.getPixel) {
+        // .. based on how long you have been hovering over it
+        if(this.hoverCount == 60) {
+          this.getPixelOwner(gridX, gridY)
+          this.getPixel = false
+          this.hoverCount = 0
+        } else if(this.hoverCount == 1) {
+          this.loadNextPixelOwner(gridX, gridY)
+        }
+      }
+
+      this.hoverCount++
+
+      let now = new Date()
+      if(this.messageReactive != undefined) {
+        if((now.getTime() - this.lastUpdate.getTime()) / 1000 > 4) {
+          this.closeTT()
+        }
+      }
     },
     mousePressed (p5) {
       this.grab.startX = p5.mouseX
@@ -278,9 +324,8 @@ export default {
       this.mouseDown = false;
       let dragVector = p5.createVector(this.screenMove.x, this.screenMove.y);
       let ogVector = p5.createVector(p5.mouseX, p5.mouseY)
-      //console.log(dragVector.x, ogVector.x, dragVector.dist(ogVector))
       if(dragVector.dist(ogVector) < 5) {
-        if(store.token == '') {
+        if(sessionStore.token == '') {
           this.message.info(
               'Login or Register to place points',
               {
@@ -296,12 +341,12 @@ export default {
         let gridX = Math.floor(ratioX / this.sf)
         let gridY = Math.floor(ratioY / this.sf)
 
-        if(gridX < 0 || gridX > store.screen.x || gridY < 0 || gridY > store.screen.y) {
+        if(gridX < 0 || gridX > canvasStore.screen.x || gridY < 0 || gridY > canvasStore.screen.y) {
           return;
         } else {
-          this.c = p5.color(store.selectedColor)
-          store.colorSelected()
-          this.pp(gridX, gridY)
+          this.c = p5.color(canvasStore.selectedColor)
+          canvasStore.colorSelected()
+          this.pp(gridX, gridY, true)
         }
       }
     },
@@ -341,17 +386,17 @@ export default {
       });
     },
     placePixelInSection(key, color) {
-      const x = key % store.gridXX
-      const y = Math.floor(key / store.gridXX)
-      const xSec = Math.floor(x / store.ss)
-      const ySec = Math.floor(y / store.ss)
-      let i = xSec + ((store.gridXX / store.ss) * ySec)
+      const x = key % canvasStore.gridXX
+      const y = Math.floor(key / canvasStore.gridXX)
+      const xSec = Math.floor(x / canvasStore.ss)
+      const ySec = Math.floor(y / canvasStore.ss)
+      let i = xSec + ((canvasStore.gridXX / canvasStore.ss) * ySec)
       this.gridSections[i].setPixel(key, color)
     },
     drawPixel(x, y, c) {
-      const xSec = Math.floor(x / store.ss)
-      const ySec = Math.floor(y / store.ss)
-      let i = xSec + (store.tileSize * ySec)
+      const xSec = Math.floor(x / canvasStore.ss)
+      const ySec = Math.floor(y / canvasStore.ss)
+      let i = xSec + (canvasStore.tileSize * ySec)
       this.gridSections[i].drawPixel(x, y, c)
     },
     drawTempPixel(p5, x, y, c) {
@@ -366,20 +411,84 @@ export default {
     },
     spp(x,y,c) {
       this.c = this.p5.color(c)
-      this.pp(x,y)
+      this.pp(x,y, false)
     },
-    pp(x, y) {
+    pp(x, y, isManual) {
       let c = this.rgbToHex(this.c.levels)
-      this.tempPixels[x + (store.gridXX * y)] = c;
+      this.tempPixels[x + (canvasStore.gridXX * y)] = c;
       const bodyFormData = new FormData()
       bodyFormData.append('x', x)
       bodyFormData.append('y', y)
       bodyFormData.append('color', c)
+      bodyFormData.append('user_id', sessionStore.user.id)
+      bodyFormData.append('is_manual', isManual)
       this.HTTP
-        .post('pixels/add', bodyFormData, { headers: {"Authorization" : 'Bearer ' + store.token} })
+        .post('pixels/add', bodyFormData, { headers: {"Authorization" : 'Bearer ' + sessionStore.token} })
         .then(response => {
           console.log(response)
         })
+        .catch(error => {
+          console.log(error.message)
+        })
+    },
+    displayPixelOwner() {
+      // check if we have value
+      let msg
+      let success
+      if(this.pixelOwner != "") {
+        msg = this.pixelOwner.name
+        success = "success"
+      } else {
+        msg = "Unknown"
+        success = "info"
+      }
+      if(this.messageReactive == undefined) {
+        UIStore.messagePlacement = 'bottom'
+        this.messageReactive = this.message.create(msg, {
+          type: success,
+          duration: 0,
+        });
+      } else {
+        this.messageReactive.type = success
+        this.messageReactive.content = msg
+      }
+    },
+    closeTT() {
+      if(this.messageReactive) {
+        this.messageReactive.destroy();
+        this.messageReactive =  undefined
+      }
+    },
+    hasPixel(x, y) {
+      let pI = x + (canvasStore.gridXX * y)
+      const xSec = Math.floor(x / canvasStore.ss)
+      const ySec = Math.floor(y / canvasStore.ss)
+      let i = xSec + ((canvasStore.gridXX / canvasStore.ss) * ySec)
+      return this.gridSections[i].hasPixelAtPosition(pI)
+    },
+    getPixelOwner(x, y) {
+      this.HTTP
+        .get('pixels/' + x + '/' + y)
+        .then(response => {
+          this.pixelOwner = response.data
+          this.displayPixelOwner()
+          this.lastUpdate = new Date()
+        })
+        .catch(error => {
+          console.log(error)
+        })
+    },
+    loadNextPixelOwner() {
+      if(this.messageReactive == undefined) {
+        UIStore.messagePlacement = 'bottom'
+        this.messageReactive = this.message.create('', {
+          type: 'loading',
+          duration: 0,
+        });
+      } else {
+        this.messageReactive.type = 'loading'
+      }
+      this.lastUpdate = new Date()
     },
     rgbToHex(c) {
       return "#" + this.componentToHex(c[0]) + this.componentToHex(c[1]) + this.componentToHex(c[2])
@@ -397,7 +506,7 @@ export default {
   },
   computed: {
     hasToken() {
-      return store.token != ''
+      return canvasStore.token != ''
     },
     boundingBox() {
       const offX = -this.screenOffset.x / this.sf
@@ -405,10 +514,10 @@ export default {
       const offDiffX = (this.center.x*2 - this.screenOffset.x) / this.sf
       const offDiffY = (this.center.y*2 - this.screenOffset.y) / this.sf
       return {
-        l: Math.max(Math.floor(offX / store.s / store.ss) - 1, 0),
-        r: Math.min(Math.floor(offDiffX / store.s / store.ss) + 1, 10),
-        t: Math.max(Math.floor(offY / store.s/ store.ss) - 1, 0),
-        b: Math.min(Math.floor(offDiffY / store.s/ store.ss) + 1, 10)
+        l: Math.max(Math.floor(offX / canvasStore.s / canvasStore.ss) - 1, 0),
+        r: Math.min(Math.floor(offDiffX / canvasStore.s / canvasStore.ss) + 1, 10),
+        t: Math.max(Math.floor(offY / canvasStore.s/ canvasStore.ss) - 1, 0),
+        b: Math.min(Math.floor(offDiffY / canvasStore.s/ canvasStore.ss) + 1, 10)
       }
     }
   }

@@ -1,12 +1,12 @@
 <template>
-  <n-drawer v-model:show="store.isScriptDrawerOpen" :width="502" placement="top" :on-after-leave="closeDrawer" :on-after-enter="openDrawer">
+  <n-drawer v-model:show="UIStore.isScriptDrawerOpen" :width="502" placement="top" :on-after-leave="closeDrawer" :on-after-enter="openDrawer">
     <n-drawer-content title="Colors">
         <n-scrollbar x-scrollable>
           <n-space>
             <n-space vertical>
               <n-form-item label="Array" path="selectValue">
                 <n-input
-                  v-model:value="store.pixelArray"
+                  v-model:value="scriptStore.pixelArray"
                   type="textarea"
                   placeholder="Basic Textarea"
                 />
@@ -14,25 +14,25 @@
             </n-space>
             <n-space vertical>
               <n-form-item  label="Top Left corner X" path="start.x">
-                <n-input-number v-model:value="store.start.x" clearable />
+                <n-input-number v-model:value="scriptStore.start.x" clearable />
               </n-form-item>
               <n-form-item  label="Top Left corner Y" path="start.y">
-                <n-input-number v-model:value="store.start.y" clearable />
+                <n-input-number v-model:value="scriptStore.start.y" clearable />
               </n-form-item>
             </n-space>
              <n-space vertical>
               <n-form-item  label="Offset X" path="offset.x">
-                <n-input-number v-model:value="store.offset.x" clearable />
+                <n-input-number v-model:value="scriptStore.offset.x" clearable />
               </n-form-item>
               <n-form-item  label="Offset Y" path="offset.y">
-                <n-input-number v-model:value="store.offset.y" clearable />
+                <n-input-number v-model:value="scriptStore.offset.y" clearable />
               </n-form-item>
             </n-space>
             <n-space vertical>
               <n-scrollbar y-scrollable>
-                <n-dynamic-input v-model:value="store.selectedColorList" :on-create="onCreateColor">
+                <n-dynamic-input v-model:value="scriptStore.selectedColorList" :on-create="onCreateColor">
                   <template #create-button-default>
-                    Add whatever you want
+                    {{value}}
                   </template>
                   <template #default="{ value }">
                     <!-- <n-input v-model:value="value.id" type="text" /> -->
@@ -54,7 +54,7 @@
 </template>
 
 <script>
-import { store } from './../store.js'
+import { canvasStore, scriptStore, UIStore } from './../store.js'
 import { NDrawer, NDrawerContent, NScrollbar, NInput, NSpace, NInputNumber, NFormItem, NDynamicInput, NColorPicker} from 'naive-ui'
 
 export default {
@@ -71,7 +71,9 @@ export default {
   },
   data () {
     return {
-      store,
+      canvasStore,
+      scriptStore,
+      UIStore,
     }
   },
   methods: {
@@ -82,11 +84,11 @@ export default {
       this.emitter.emit("clear")
     },
     startScript() {
-      this.store.isScriptRunning = true
+      this.scriptStore.isScriptRunning = true
     },
     onCreateColor() {
         return {
-          id: store.selectedColorList.length,
+          id: scriptStore.selectedColorList.length,
           color: ''
         };
       }
@@ -101,8 +103,8 @@ export default {
     },
     colorList () {
       const colorSelect = []
-      for (let i = 0; i < store.colors.length; i++) {
-        const element = store.colors[i];
+      for (let i = 0; i < canvasStore.colors.length; i++) {
+        const element = canvasStore.colors[i];
         colorSelect.push({
           label: element,
           value: element,

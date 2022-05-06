@@ -1,7 +1,7 @@
 <template>
 <n-config-provider :theme="theme">
     <n-dialog-provider>
-      <n-message-provider>
+      <n-message-provider :placement="UIStore.messagePlacement">
         <GameContainer />
     </n-message-provider>
     </n-dialog-provider>
@@ -12,6 +12,7 @@
 import GameContainer from './components/GameContainer.vue'
 import {NConfigProvider, NMessageProvider, NDialogProvider} from 'naive-ui'
 import { darkTheme } from 'naive-ui'
+import { UIStore } from './store.js'
 
 export default {
   name: 'App',
@@ -23,6 +24,7 @@ export default {
   },
   data() {
     return {
+      UIStore,
       darkTheme,
       theme: darkTheme,
     }

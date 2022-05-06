@@ -1,7 +1,6 @@
 import { reactive } from 'vue'
 
-
-export const store = reactive({
+const canvasStore = reactive({
   screen: { // screen size in pixel
     x: 1000 * 20,
     y: 1000 * 20
@@ -10,67 +9,6 @@ export const store = reactive({
   ss: 100, // pixel per section
   gridXX: 1000, // grid size
   tileSize: 10,
-  token: localStorage.getItem('id_token') || '',
-  isFinishedConnecting: false,
-  isLoggedIn: false,
-  setToken(token) {
-    localStorage.setItem('id_token', token)
-    this.token = token
-    this.isLoggedIn = true;
-  },
-  user: {},
-  isScriptDrawerOpen: false,
-  isMenuDrawerOpen: false,
-  toggledrawer() {
-    this.isMenuDrawerOpen = !this.isMenuDrawerOpen;
-  },
-  toggleScriptDrawer() {
-    this.isScriptDrawerOpen = !this.isScriptDrawerOpen;
-  },
-  isModalOpen: false, 
-  isLoginModalOpen: false,
-  isRegistrationModalOpen: false,
-  openRegistration() {
-    this.isModalOpen = true
-    this.isLoginModalOpen = false
-    this.isRegistrationModalOpen = true
-  },
-  openLogin() {
-    this.isModalOpen = true
-    this.isLoginModalOpen = true
-    this.isRegistrationModalOpen = false
-  },
-  closeModal() {
-    this.isModalOpen = false
-    this.isLoginModalOpen = false
-    this.isRegistrationModalOpen = false
-  },
-  selectedColor: '#000000',
-  isScriptRunning: false,
-  saveScriptData() {
-    localStorage.setItem('pixel_array', this.pixelArray)
-    localStorage.setItem('store_position', JSON.stringify(this.start))
-    localStorage.setItem('start_offset', JSON.stringify(this.offset))
-    localStorage.setItem('selected_color_list', JSON.stringify(this.selectedColorList))
-    localStorage.setItem('swatch_history', JSON.stringify(this.swatches))
-  },
-  loadScriptData() {
-    if(localStorage.getItem('pixel_array') != null) {
-      this.pixelArray = localStorage.getItem('pixel_array')
-    }
-    if(localStorage.getItem('store_position')!= null) {
-      this.start = JSON.parse(localStorage.getItem('store_position'))
-    }
-    if(localStorage.getItem('start_offset')!= null) {
-      this.offset = JSON.parse(localStorage.getItem('start_offset'))
-    }
-    if(localStorage.getItem('selected_color_list')!= null) {
-      this.selectedColorList = JSON.parse(localStorage.getItem('selected_color_list'))
-    }
-    if(localStorage.getItem('swatch_history')!= null) {
-      this.selectedColorList = JSON.parse(localStorage.getItem('swatch_history'))
-    }
-  },
   colorSelected() {
     if(this.swatches.includes(this.selectedColor)) {
       return
@@ -79,31 +17,21 @@ export const store = reactive({
       this.swatches.splice(2, 1);
     }
     this.swatches.push(this.selectedColor)
+    this.saveData()
   },
   swatches: [
     "#000000",
     "#ffffff"
   ],
-  pixelArray: '[0,0,0,0,0],\n' +
-    "[0,0,1,0,0],\n" +
-    "[0,1,1,1,0],\n" +
-    "[0,0,1,0,0],\n" +
-    "[0,0,0,0,0]",
-  start: {
-    x: 20,
-    y: 20
+  selectedColor: '#000000',
+  saveData() {
+    localStorage.setItem('swatch_history', JSON.stringify(this.swatches))
   },
-  offset: {
-    x: 2,
-    y: 0
+  loadData() {
+    if(localStorage.getItem('swatch_history') != null) {
+      this.swatches = JSON.parse(localStorage.getItem('swatch_history'))
+    }
   },
-  selectedColorList: [{
-    id: '0',
-    color: '#DA291C'
-  }, {
-    id: '1',
-    color: '#ffffff'
-  }],
   colors: [
     '#AA0000',
     '#AA5500',
@@ -171,3 +99,94 @@ export const store = reactive({
     '#FFFFFF',
   ]
 })
+const sessionStore = reactive({
+  token: localStorage.getItem('id_token') || '',
+  isFinishedConnecting: false,
+  isLoggedIn: false,
+  setToken(token) {
+    localStorage.setItem('id_token', token)
+    this.token = token
+    this.isLoggedIn = true;
+  },
+  setUser(user) {
+    localStorage.setItem('user', JSON.stringify(user))
+    this.user = user
+  },
+  user: {}
+})
+
+const scriptStore = reactive({
+  pixelArray: '[0,0,0,0,0],\n' +
+    "[0,0,1,0,0],\n" +
+    "[0,1,1,1,0],\n" +
+    "[0,0,1,0,0],\n" +
+    "[0,0,0,0,0]",
+  start: {
+    x: 20,
+    y: 20
+  },
+  offset: {
+    x: 2,
+    y: 0
+  },
+  selectedColorList: [{
+    id: '0',
+    color: '#DA291C'
+  }, {
+    id: '1',
+    color: '#ffffff'
+  }],
+  isScriptRunning: false,
+  saveScriptData() {
+    localStorage.setItem('pixel_array', this.pixelArray)
+    localStorage.setItem('store_position', JSON.stringify(this.start))
+    localStorage.setItem('start_offset', JSON.stringify(this.offset))
+    localStorage.setItem('selected_color_list', JSON.stringify(this.selectedColorList))
+  },
+  loadScriptData() {
+    if(localStorage.getItem('pixel_array') != null) {
+      this.pixelArray = localStorage.getItem('pixel_array')
+    }
+    if(localStorage.getItem('store_position')!= null) {
+      this.start = JSON.parse(localStorage.getItem('store_position'))
+    }
+    if(localStorage.getItem('start_offset')!= null) {
+      this.offset = JSON.parse(localStorage.getItem('start_offset'))
+    }
+    if(localStorage.getItem('selected_color_list')!= null) {
+      this.selectedColorList = JSON.parse(localStorage.getItem('selected_color_list'))
+    }
+  }
+})
+
+const UIStore = reactive({
+  isScriptDrawerOpen: false,
+  isMenuDrawerOpen: false,
+  messagePlacement: 'bottom',
+  toggledrawer() {
+    this.isMenuDrawerOpen = !this.isMenuDrawerOpen;
+  },
+  toggleScriptDrawer() {
+    this.isScriptDrawerOpen = !this.isScriptDrawerOpen;
+  },
+  isModalOpen: false, 
+  isLoginModalOpen: false,
+  isRegistrationModalOpen: false,
+  openRegistration() {
+    this.isModalOpen = true
+    this.isLoginModalOpen = false
+    this.isRegistrationModalOpen = true
+  },
+  openLogin() {
+    this.isModalOpen = true
+    this.isLoginModalOpen = true
+    this.isRegistrationModalOpen = false
+  },
+  closeModal() {
+    this.isModalOpen = false
+    this.isLoginModalOpen = false
+    this.isRegistrationModalOpen = false
+  }
+})
+
+export {canvasStore, sessionStore, scriptStore, UIStore}

@@ -1,6 +1,6 @@
 <template>
     <n-modal 
-      :show="store.isModalOpen"
+      :show="UIStore.isModalOpen"
       preset="dialog"
       title="Dialog"
       :mask-closable="false"
@@ -10,7 +10,7 @@
         <div>Account</div>
       </template>
         <n-form
-          v-if="store.isRegistrationModalOpen"
+          v-if="UIStore.isRegistrationModalOpen"
           ref="formRefReg"
           :label-width="80"
           :model="formValue"
@@ -42,7 +42,7 @@
 
         
         <n-form
-          v-if="store.isLoginModalOpen"
+          v-if="UIStore.isLoginModalOpen"
           ref="formRef"
           :label-width="80"
           :model="formValue"
@@ -75,7 +75,7 @@
 import { NModal, NForm, NInput, NFormItemGi, NButton, NGrid} from 'naive-ui';
 import {useMessage} from 'naive-ui'
 import VueAxios from './common/http-common';
-import { store } from './../store.js'
+import { UIStore, sessionStore } from './../store.js'
 const Mode = {LOGIN: 0, REGISTER: 1}
 export default {
   mixins: [VueAxios],
@@ -93,7 +93,8 @@ export default {
   data () {
     return {
       mode: Mode.LOGIN,
-      store,
+      UIStore,
+      sessionStore,
       message: null,
       showModal: false,
       formValue: {
@@ -145,16 +146,16 @@ export default {
     },
     getInfo() {
       this.HTTP
-        .get('me', { headers: {"Authorization" : 'Bearer ' + store.token}})
+        .get('me', { headers: {"Authorization" : 'Bearer ' + sessionStore.token}})
         .then(response => {
-          store.user = response.data
-          store.isFinishedConnecting = true
-          store.isLoggedIn = true
+          sessionStore.setUser(response.data)
+          sessionStore.isFinishedConnecting = true
+          sessionStore.isLoggedIn = true
 
         })
         .catch(error => {
           console.log(error.response.data.message)
-          store.isFinishedConnecting = true
+          sessionStore.isFinishedConnecting = true
         })
     },
     onLogin (e) {
@@ -165,15 +166,17 @@ export default {
       this.HTTP
         .post('login', bodyFormData)
         .then(response => {
-          console.log(response.data)
-          this.store.setToken(response.data.access_token)
+          UIStore.messagePlacement = 'top'
+          this.sessionStore.setToken(response.data.access_token)
           this.errorMessage.info(
             "Welcome back",
             {
               keepAliveOnHover: true
             }
           )
-          this.store.closeModal()
+          
+          this.getUserData();
+          UIStore.closeModal()
         })
         .catch(error => {
           this.errorMessage.error(
@@ -182,6 +185,14 @@ export default {
               keepAliveOnHover: true
             }
           )
+        })
+    },
+    getUserData() {
+      this.HTTP
+        .get('me', { headers: {"Authorization" : 'Bearer ' + sessionStore.token}})
+        .then(response => {
+          console.log(response)
+          sessionStore.setUser(response.data);
         })
     },
     onRegister (e) {
@@ -193,14 +204,15 @@ export default {
       this.HTTP
         .post('register', bodyFormData)
         .then(response => {
-          this.store.setToken(response.data.access_token)
+          this.sessionStore.setToken(response.data.access_token)
+          UIStore.messagePlacement = 'top'
           this.errorMessage.info(
             "Welcome, you can start placing pixels",
             {
               keepAliveOnHover: true
             }
           )
-          this.store.closeModal()
+          this.sessionStore.closeModal()
         })
         .catch(error => {
           this.errorMessage.error(
@@ -215,7 +227,6 @@ export default {
       console.log(e)
     },
     goRegister () {
-      console.log("goRegister")
       this.mode = Mode.REGISTER
     },
     goLogin () {

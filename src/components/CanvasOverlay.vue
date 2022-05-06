@@ -1,26 +1,26 @@
 <template>
   <div class="static-container">
-    <n-space :size="24" align="center" v-if="store.isFinishedConnecting">
+    <n-space :size="24" align="center" v-if="sessionStore.isFinishedConnecting">
       <n-space vertical :size="3">
         <div class="gap" />
         <n-color-picker
             class="color-picker"
             :show-alpha="false"
-            v-model:value="store.selectedColor"
-            :swatches="store.swatches"
+            :swatches="canvasStore.swatches"
+            v-model:value="canvasStore.selectedColor"
             :modes="['hex']"
             size="large"
           />
       </n-space>
       <n-space vertical :size="3">
         <div class="gap" />
-        <n-button type="primary" @click="store.toggledrawer()">
+        <n-button type="primary" @click="UIStore.toggledrawer()">
           {{ buttonLabel }}
         </n-button>
       </n-space>
       <n-space vertical :size="3">
         <div class="gap" />
-        <n-button v-if="store.isLoggedIn" type="primary" @click="store.toggleScriptDrawer()">
+        <n-button v-if="sessionStore.isLoggedIn" type="primary" @click="UIStore.toggleScriptDrawer()">
           SCRIPT
         </n-button>
       </n-space>
@@ -33,9 +33,9 @@
 </template>
 
 <script>
-import { store } from './../store.js'
+import { sessionStore, UIStore, canvasStore } from './../store.js'
 import ScriptPlayer from './ScriptPlayer.vue'
-import {NButton, NSpace, NColorPicker} from 'naive-ui'
+import { NButton, NSpace, NColorPicker } from 'naive-ui'
 export default {
   components: {
     ScriptPlayer,
@@ -45,22 +45,27 @@ export default {
   },
   data () {
     return {
-      store,
+      sessionStore,
+      canvasStore,
+      UIStore,
     }
+  },
+  mounted() {
+    canvasStore.loadData()
   },
   methods: {
     spp(x,y,c) {
       this.$emit("spp" ,x ,y, c)
-    }
+    },
   },
   computed: {
     buttonLabel() {
-      if(store.isLoggedIn) {
+      if(sessionStore.isLoggedIn) {
         return "COLORS"
       } else {
         return "LOGIN/REGISTER"
       }
-    }
+    },
   }
 }
 </script>
