@@ -173,11 +173,13 @@ const UIStore = reactive({
   isLoginModalOpen: false,
   isRegistrationModalOpen: false,
   openRegistration() {
+    console.log("register")
     this.isModalOpen = true
     this.isLoginModalOpen = false
     this.isRegistrationModalOpen = true
   },
   openLogin() {
+    console.log("LOGIN")
     this.isModalOpen = true
     this.isLoginModalOpen = true
     this.isRegistrationModalOpen = false

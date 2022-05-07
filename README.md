@@ -3,6 +3,10 @@ This is inspired by the reddit game called place.
 This repo is for the client side of the solution. You will need a backend in order to make it work.
 ##
 
+## Prerequisite
+- nodejs
+- Vue cli
+
 ## Project setup
 ```
 npm install

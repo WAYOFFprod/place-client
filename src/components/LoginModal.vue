@@ -19,7 +19,7 @@
         >
           <n-grid :span="24" class="margin-top">
             <n-form-item-gi :span="24" class="center">
-              <n-button @click="goLogin">
+              <n-button @click="UIStore.openLogin()">
                 Login
               </n-button>
             </n-form-item-gi>
@@ -51,7 +51,7 @@
         >
           <n-grid :span="24" class="margin-top">
             <n-form-item-gi :span="24" class="center">
-              <n-button @click="goRegister">
+              <n-button @click="UIStore.openRegistration()">
                 Create an account
               </n-button>
             </n-form-item-gi>
@@ -76,7 +76,7 @@ import { NModal, NForm, NInput, NFormItemGi, NButton, NGrid} from 'naive-ui';
 import {useMessage} from 'naive-ui'
 import VueAxios from './common/http-common';
 import { UIStore, sessionStore } from './../store.js'
-const Mode = {LOGIN: 0, REGISTER: 1}
+
 export default {
   mixins: [VueAxios],
   mounted() {
@@ -92,11 +92,9 @@ export default {
   },
   data () {
     return {
-      mode: Mode.LOGIN,
       UIStore,
       sessionStore,
       message: null,
-      showModal: false,
       formValue: {
         user: {
           email: '',
@@ -127,22 +125,10 @@ export default {
   },
   methods: {
     openRegister() {
-      this.mode = Mode.REGISTER
-      this.showModal = true
+      UIStore.openRegistration()
     },
     openLogin() {
-      this.mode = Mode.LOGIN
-      this.showModal = true
-    },
-    toggleMode() {
-      if(this.mode == Mode.LOGIN) {
-        this.mode = Mode.REGISTER
-      } else {
-        this.mode = Mode.LOGIN
-      }
-    },
-    toggleShowModal() {
-      this.showModal = !this.showModal
+      UIStore.openLogin()
     },
     getInfo() {
       this.HTTP
@@ -151,7 +137,7 @@ export default {
           sessionStore.setUser(response.data)
           sessionStore.isFinishedConnecting = true
           sessionStore.isLoggedIn = true
-
+          UIStore.closeModal()
         })
         .catch(error => {
           console.log(error.response.data.message)
@@ -226,23 +212,12 @@ export default {
     onClose (e) {
       console.log(e)
     },
-    goRegister () {
-      this.mode = Mode.REGISTER
-    },
-    goLogin () {
-      this.mode = Mode.LOGIN
-    },
     closeModal () {
       this.showModal = false
     }
   },
   computed: {
-    isLogin() {
-      return this.mode == Mode.LOGIN
-    },
-    isRegistered() {
-      return this.mode == Mode.REGISTER
-    }
+
   }
 }
 </script>
