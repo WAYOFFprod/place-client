@@ -25,10 +25,6 @@ export default {
       canvasStore,
     }
   },
-  mounted () {
-    console.log("mounted")
-    canvasStore.loadData()
-  },
   methods: {
     colorSelected(c) {
       canvasStore.selectedColor = c

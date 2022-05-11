@@ -1,14 +1,16 @@
 import { reactive } from 'vue'
 
 const canvasStore = reactive({
-  screen: { // screen size in pixel
-    x: 1000 * 20,
-    y: 1000 * 20
-  },
   s: 20, // pixel per "pixel" / scale
   ss: 100, // pixel per section
   gridXX: 1000, // grid size
+  gridYY: 1000, // grid size
   tileSize: 10,
+  isPrivate: false,
+  isScriptAllowed: true,
+  isManualAllowed: true,
+  canvasId: 0,
+  canvases: [],
   colorSelected() {
     if(this.swatches.includes(this.selectedColor)) {
       return

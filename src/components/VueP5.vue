@@ -17,12 +17,12 @@ export default {
   },
   methods: {
     loading() {
-      console.log("loading")
+      // console.log("loading")
       this.isLoading = true;
     },
     finishedLoading() {
       this.isLoading = false
-      console.log("finished loading")
+      // console.log("finished loading")
     }
   },
   mounted() {   
@@ -62,7 +62,6 @@ export default {
       }
       p5.touchEnded = (e) => {
         //if(e.target.classList.contains('p5Canvas')) { // only pass event if scroll is on top of canvas
-        console.log(e.touches.length)
           if(e.touches.length == 0) {
             if(t.isPinch) {
               t.$emit('mouseReleased', p5);
@@ -70,7 +69,6 @@ export default {
               t.isPinch = false
             }
           } else if(e.touches.length == 1) {
-            console.log(e)
             t.$emit('pinchStop', e.touches[0])
           }
         //}
@@ -94,9 +92,11 @@ export default {
         }
       }
       window.addEventListener("wheel", function(e) {
-        e.preventDefault();
+        console.log('scroll')
         if(e.target.classList.contains('p5Canvas')) { // only pass event if scroll is on top of canvas
-          t.$emit('scroll', e); 
+          console.log('here')
+          e.preventDefault();
+          t.$emit('scroll', e);
         }
       }, { passive: false });
       p5.mouseDragged = (e) => {

@@ -5,7 +5,7 @@ This repo is for the client side of the solution. You will need a backend in ord
 
 ## Prerequisite
 - nodejs
-- Vue cli
+- Vue cli 
 
 ## Project setup
 ```

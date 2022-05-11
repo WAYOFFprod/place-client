@@ -17,6 +17,7 @@ import ColorSelector from './ColorSelector.vue'
 import StartMenu from './StartMenu.vue'
 import { UIStore, sessionStore } from './../store.js'
 import { NDrawer, NDrawerContent } from 'naive-ui'
+
 export default {
   components: {
     ColorSelector,

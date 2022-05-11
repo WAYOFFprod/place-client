@@ -4,18 +4,15 @@
       preset="dialog"
       title="Dialog"
       :mask-closable="false"
-      :style="bodyStyle"
       @handleCloseClick="closeModal">
       <template #header>
         <div>Account</div>
       </template>
         <n-form
           v-if="UIStore.isRegistrationModalOpen"
-          ref="formRefReg"
           :label-width="80"
           :model="formValue"
           :rules="rules"
-          :size="size"
         >
           <n-grid :span="24" class="margin-top">
             <n-form-item-gi :span="24" class="center">
@@ -47,7 +44,6 @@
           :label-width="80"
           :model="formValue"
           :rules="rules"
-          :size="size"
         >
           <n-grid :span="24" class="margin-top">
             <n-form-item-gi :span="24" class="center">

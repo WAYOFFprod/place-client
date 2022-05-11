@@ -11,7 +11,8 @@ export default {
     this.HTTP = axios.create({
       baseURL: 'http://'+process.env.VUE_APP_WEBSOCKET_SERVER+':8001/api/',
       headers: {
-        Accept: 'application/json'
+        Accept: 'application/json',
+        Client: 'og-place'
       }
     })
   }

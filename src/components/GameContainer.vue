@@ -14,25 +14,15 @@
         @pinchScale="pinchScale"
         @pinchStop="pinchStop"
       />
-      <CanvasOverlay 
-        @spp="spp"
-      />
     </n-layout-content>
-    <MenuDrawer />
-    <LoginModal
-        ref="loginModal"
-      />
   </n-layout>
 </template>
 
 <script>
 import VueP5 from './VueP5.vue'
 import ScriptDrawer from './ScriptDrawer.vue'
-import MenuDrawer from './MenuDrawer.vue'
-import CanvasOverlay from './CanvasOverlay.vue'
 //mport VueAxios from './VueAxios.vue'
 import { canvasStore, sessionStore, UIStore } from './../store.js'
-import LoginModal from './LoginModal.vue'
 import VueAxios from './common/http-common'
 import GridSection from './common/GridSection.js'
 import {NLayout, NLayoutContent} from 'naive-ui'
@@ -44,10 +34,7 @@ export default {
   mixins: [VueAxios],
   components: {
     VueP5,
-    LoginModal,
     ScriptDrawer,
-    MenuDrawer,
-    CanvasOverlay,
     NLayout,
     NLayoutContent,
   },
@@ -60,35 +47,16 @@ export default {
       let i = v.x + (canvasStore.gridXX * v.y)
       delete this.tempPixels[i]
     })
+    this.emitter.on('placePixel', (data) => {
+      this.spp(data.x,data.y,data.c)
+    })
   },
   mounted() {
     this.$refs.p5vue.loading()
     this.p5 = this.$refs.p5vue.p5
-    for(let y = 0; y < canvasStore.gridXX / canvasStore.ss; y++) {
-      for(let x = 0; x < canvasStore.gridXX / canvasStore.ss; x++) {
-        this.gridSections.push(new GridSection(this.p5, x, y, canvasStore.ss, canvasStore.s, canvasStore.gridXX))
-      }
-    }
-    this.HTTP
-      .get('pixels')
-      .then(response => {
-        for (const key in response.data) {
-          if(key < 1000000 && key >= 0) {
-            this.placePixelInSection(key, response.data[key])
-          }
-        }
-        for(let i = 0; i < this.gridSections.length; i++) {
-          // const x = i % g
-          // const y = Math.floor(i / g);
-          // if(bb.l <= x && bb.r >= x && bb.t <= y && bb.b >= y) {
-            // if(i == 1)
-            this.gridSections[i].draw()
-          // }
-        }
-        this.$refs.p5vue.finishedLoading()
-      })
+    this.getCanvas()
 
-    window.Echo.channel("pixel-change").listen('PixelEvent', (e) => {
+    window.Echo.channel("pixel-change-"+canvasStore.canvasId).listen('PixelEvent', (e) => {
       let x = parseInt(e.x);
       let y = parseInt(e.y);
       let i = x + (canvasStore.gridXX * y)
@@ -173,11 +141,48 @@ export default {
     }
   },
   methods: {
+    async getCanvas() {
+      this.HTTP
+      .get('canvas/'+canvasStore.canvasId)
+      .then(response => {
+        let data = response.data[0]
+        canvasStore.gridXX = data.width
+        canvasStore.gridYY = data.height
+        canvasStore.isPrivate = data.private
+        canvasStore.isScriptAllowed = data.script_allowed
+        canvasStore.isManualAllowed = data.manual_allowed
+        canvasStore.ss = 100
+        canvasStore.tileSize = data.width / 100
+        canvasStore.name = data.label
+        
+        // create sections
+        for(let y = 0; y < canvasStore.gridXX / canvasStore.ss; y++) {
+          for(let x = 0; x < canvasStore.gridXX / canvasStore.ss; x++) {
+            this.gridSections.push(new GridSection(this.p5, x, y, canvasStore.ss, canvasStore.s, canvasStore.gridXX))
+          }
+        }
+        this.getPixels()
+      })
+    },
+    async getPixels() {
+      this.HTTP
+      .get('pixels/'+canvasStore.canvasId)
+      .then(response => {
+        for (const key in response.data) {
+          if(key < canvasStore.gridXX * canvasStore.gridYY && key >= 0) {
+            this.placePixelInSection(key, response.data[key])
+          }
+        }
+        for(let i = 0; i < this.gridSections.length; i++) {
+          this.gridSections[i].draw()
+        }
+        this.$refs.p5vue.finishedLoading()
+      })
+    },
     changeColor(c) {
       canvasStore.selectedColor = c
     },
     setup(p5) {
-      // p5.rectMode(p5.CENTER);
       this.c = p5.color('#ffffff')
       this.canvas = p5.createCanvas(p5.windowWidth, p5.windowHeight);
       p5.noSmooth()
@@ -214,7 +219,6 @@ export default {
     draw (p5) {
       //drag canvas
       if(this.mouseDown) {
-        console.log(this.mouseDown)
         this.screenOff.x = (p5.mouseX - this.grab.x)  / this.sf
         this.screenOff.y = (p5.mouseY - this.grab.y) / this.sf
       }
@@ -226,9 +230,10 @@ export default {
       p5.translate(this.screenOffset.x, this.screenOffset.y)
       p5.scale(this.sf);
 
-      // draw grid
-      p5.background(0);
-      p5.rect(0, 0, 1000, 1000);
+      // draw bg
+      p5.background('#2C2C2C')
+      p5.fill('#000000')
+      p5.rect(0, 0, canvasStore.gridXX, canvasStore.gridYY);
 
       for(let i = 0; i < this.gridSections.length; i++) {
           this.gridSections[i].updatePosition()
@@ -338,12 +343,12 @@ export default {
         let gridX = Math.floor(ratioX / this.sf)
         let gridY = Math.floor(ratioY / this.sf)
 
-        if(gridX < 0 || gridX > canvasStore.screen.x || gridY < 0 || gridY > canvasStore.screen.y) {
+        if(gridX < 0 || gridX > canvasStore.gridXX || gridY < 0 || gridY > canvasStore.gridYY) {
           return;
         } else {
           this.c = p5.color(canvasStore.selectedColor)
           canvasStore.colorSelected()
-          this.pp(gridX, gridY, true)
+          this.pp(gridX, gridY, 1)
         }
       }
     },
@@ -419,13 +424,15 @@ export default {
       bodyFormData.append('color', c)
       bodyFormData.append('user_id', sessionStore.user.id)
       bodyFormData.append('is_manual', isManual)
+      bodyFormData.append('canvas_id', canvasStore.canvasId)
       this.HTTP
         .post('pixels/add', bodyFormData, { headers: {"Authorization" : 'Bearer ' + sessionStore.token} })
         .then(response => {
           console.log(response)
         })
         .catch(error => {
-          console.log(error.message)
+          let e = JSON.parse(error.request.response); 
+          console.log(e.code, e.message)
         })
     },
     displayPixelOwner() {
@@ -461,7 +468,10 @@ export default {
       const xSec = Math.floor(x / canvasStore.ss)
       const ySec = Math.floor(y / canvasStore.ss)
       let i = xSec + ((canvasStore.gridXX / canvasStore.ss) * ySec)
-      return this.gridSections[i].hasPixelAtPosition(pI)
+      if(this.gridSections.length > i) {
+        return this.gridSections[i].hasPixelAtPosition(pI)
+      }
+      return false
     },
     getPixelOwner(x, y) {
       this.HTTP

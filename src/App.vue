@@ -2,7 +2,11 @@
 <n-config-provider :theme="theme">
     <n-dialog-provider>
       <n-message-provider :placement="UIStore.messagePlacement">
-        <GameContainer />
+        <Header />
+        <GameContainer v-if="canvasStore.canvasId > 0"/>
+        <CanvasSelector v-if="canvasStore.canvasId == 0"/>
+        <MenuDrawer />
+        <LoginModal />
     </n-message-provider>
     </n-dialog-provider>
 </n-config-provider>
@@ -10,14 +14,22 @@
 
 <script>
 import GameContainer from './components/GameContainer.vue'
-import {NConfigProvider, NMessageProvider, NDialogProvider} from 'naive-ui'
+import CanvasSelector from './components/CanvasSelector.vue'
+import MenuDrawer from './components/MenuDrawer.vue'
+import LoginModal from './components/LoginModal.vue'
+import Header from './components/Header.vue'
+import { NConfigProvider, NMessageProvider, NDialogProvider } from 'naive-ui'
 import { darkTheme } from 'naive-ui'
-import { UIStore } from './store.js'
+import { UIStore, canvasStore } from './store.js'
 
 export default {
   name: 'App',
   components: {
     GameContainer,
+    CanvasSelector,
+    Header,
+    MenuDrawer,
+    LoginModal,
     NMessageProvider,
     NDialogProvider,
     NConfigProvider
@@ -26,13 +38,9 @@ export default {
     return {
       UIStore,
       darkTheme,
+      canvasStore,
       theme: darkTheme,
     }
-  },
-  created() {
-    window.addEventListener('wheel', function (event) {
-      event.preventDefault()
-    },{ passive: false })
   }
 }
 </script>
@@ -41,10 +49,21 @@ export default {
 #app {
   widows: 100%;
   height: 100%;
+}
+.p5Canvas {
   overflow: none;
 }
 body {
   height: 100%;
-  overflow: hidden;
+}
+.selector-container{
+  padding-top: 60px;
+  height: 100vh;
+} 
+.n-page-header-wrapper {
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  width: 100%;
 }
 </style>

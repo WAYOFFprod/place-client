@@ -1,5 +1,11 @@
 <template>
   <n-space vertical :size="3">
+    <n-button class="script-button" type="primary" @click="toggleButton">
+      {{percentage}}%
+      <n-icon>
+        <Play16Regular />
+      </n-icon>
+    </n-button>
     <n-progress
       class="script-progress"
       type="line"
@@ -9,12 +15,6 @@
       fill-border-radius="0"
     >
     </n-progress>
-    <n-button class="script-button" type="primary" @click="toggleButton">
-      {{percentage}}%
-      <n-icon>
-        <Play16Regular />
-      </n-icon>
-    </n-button>
   </n-space>
 </template>
 
@@ -191,7 +191,12 @@ export default {
           
           this.percentage = Math.round((count / size) * 100)
           const c = this.colors[this.pixels[y][x]] // get hex string
-          this.$emit('spp', this.sp.x + x, this.sp.y + y, c)
+          const data = {
+            x: this.sp.x + x,
+            y: this.sp.y + y,
+            c: c
+          }
+          this.emitter.emit("placePixel", data)
           await this.sleep(1000);
         }
       }
