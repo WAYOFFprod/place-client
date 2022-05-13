@@ -68,8 +68,13 @@ export default {
       this.HTTP
       .get('canvas', { headers: {"Authorization" : 'Bearer ' + sessionStore.token}})
       .then(response => {
+        console.log(response.data)
         let data = response.data
         canvasStore.canvases = data
+      })
+      .catch(error => {
+        let e = JSON.parse(error.request.response); 
+        console.log(e.code, e.message)
       })
     },
     editCanvas(canvasId) {
@@ -81,7 +86,7 @@ export default {
       this.HTTP
         .delete('canvas/'+canvasId, { headers: {"Authorization" : 'Bearer ' + sessionStore.token} })
         .then(response => {
-          console.log(response)
+          console.log("Deleted: ", response)
           this.closeCanvas()
           for(let i = 0; i < canvasStore.canvases.length; i++) {
             if(canvasStore.canvases[i].id == canvasId) {
@@ -96,17 +101,24 @@ export default {
         })
     },
     closeCanvas(data) {
-      for(let i = 0; i < canvasStore.canvases.length; i++) {
-        if(canvasStore.canvases[i].id == this.edit.value) {
-          canvasStore.canvases[i] = data
+      if(data) {
+        let added = false
+        for(let i = 0; i < canvasStore.canvases.length; i++) {
+          if(canvasStore.canvases[i].id == this.edit.value) {
+            canvasStore.canvases[i] = data
+            added = true
+          }
+        }
+        if(!added) {
+          canvasStore.canvases.push(data)
         }
       }
+      
       this.edit.isOpen = false;
     }
   },
   computed: {
     activeCanvasData() {
-      console.log(canvasStore.canvases[this.edit.value]);
       for(let i = 0; i < canvasStore.canvases.length; i++) {
         if(canvasStore.canvases[i].id == this.edit.value) {
           return canvasStore.canvases[i]
@@ -117,13 +129,11 @@ export default {
     canMakeCanvas() {
       let mine = 0
       for(let i = 0; i < canvasStore.canvases.length; i++) {
-        console.log(canvasStore.canvases[i].user_id, sessionStore.user.id)
         if(canvasStore.canvases[i].user_id == sessionStore.user.id) {
           mine++
         }
       }
-      console.log(mine)
-      return mine < 2;
+      return mine < 2 || sessionStore.user.id == 1;
     }
   }
 }

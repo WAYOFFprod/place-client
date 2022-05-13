@@ -49,7 +49,7 @@
 <script>
 import { NModal, NForm, NInput, NFormItemGi, NButton, NGrid, NSwitch, NInputNumber} from 'naive-ui';
 import VueAxios from './common/http-common';
-import { UIStore, sessionStore } from './../store.js'
+import { UIStore, sessionStore, canvasStore } from './../store.js'
 export default {
   mixins: [VueAxios],
   props: ['isOpen', 'isNew', 'id', 'width', 'height', 'script_allowed', 'manual_allowed', 'private', 'label'],
@@ -67,6 +67,7 @@ export default {
     return {
       UIStore,
       sessionStore,
+      canvasStore,
       name: this.label,
       formValue: {
         name: this.label,
@@ -135,7 +136,6 @@ export default {
             console.log(e.code, e.message)
           })
       }
-      
     },
     cancel() {
       this.$emit("closeCanvas");

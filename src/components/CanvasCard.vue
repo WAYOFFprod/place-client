@@ -5,10 +5,9 @@
         <!-- <img src="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"> -->
       </template>
       <ul>
-        <li>Width: {{data.width}}</li>
-        <li>Height: {{data.height}}</li>
-        <li>Pixel placement: {{isAllowed(data.script_allowed, data.manual_allowed)}}</li>
-        <li>Owner:</li>
+        <li>Size: {{ data.width }} x {{ data.height }}</li>
+        <li>Pixel placement: {{ isAllowed(data.script_allowed, data.manual_allowed) }}</li>
+        <li>Owner: {{ data.user.name }}</li>
         <li>Visibility: {{ isPrivate(data.private) }}</li>
       </ul>
       <template #action>
