@@ -166,7 +166,7 @@ export default {
     },
     async getPixels() {
       this.HTTP
-      .get('pixel/user/'+canvasStore.canvasId)
+      .get('pixels/'+canvasStore.canvasId)
       .then(response => {
         for (const key in response.data) {
           if(key < canvasStore.gridXX * canvasStore.gridYY && key >= 0) {
@@ -475,7 +475,7 @@ export default {
     },
     getPixelOwner(x, y) {
       this.HTTP
-        .get('pixels/' + canvasStore.canvasId + '/' + x + '/' + y)
+        .get('pixels/user/' + canvasStore.canvasId + '/' + x + '/' + y)
         .then(response => {
           this.pixelOwner = response.data
           this.displayPixelOwner()
