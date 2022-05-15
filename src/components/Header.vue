@@ -43,7 +43,7 @@
         <n-button v-if="sessionStore.isLoggedIn && isOnCanvas && canvasStore.isScriptAllowed" type="primary" @click="UIStore.toggleScriptDrawer()">
           SCRIPT
         </n-button>
-        <ScriptPlayer 
+        <script-player 
           v-if="sessionStore.isLoggedIn && isOnCanvas && canvasStore.isScriptAllowed"
           ref="scriptPlayer"
         />

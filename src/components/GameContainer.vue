@@ -166,7 +166,7 @@ export default {
     },
     async getPixels() {
       this.HTTP
-      .get('pixels/'+canvasStore.canvasId)
+      .get('pixel/user/'+canvasStore.canvasId)
       .then(response => {
         for (const key in response.data) {
           if(key < canvasStore.gridXX * canvasStore.gridYY && key >= 0) {
