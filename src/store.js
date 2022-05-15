@@ -21,6 +21,7 @@ const canvasStore = reactive({
     this.swatches.push(this.selectedColor)
     this.saveData()
   },
+  isPainting: true,
   swatches: [
     "#000000",
     "#ffffff"

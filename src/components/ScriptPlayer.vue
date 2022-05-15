@@ -3,7 +3,7 @@
     <n-button class="script-button" type="primary" @click="toggleButton">
       {{percentage}}%
       <n-icon>
-        <Play16Regular />
+        <play16-regular />
       </n-icon>
     </n-button>
     <n-progress

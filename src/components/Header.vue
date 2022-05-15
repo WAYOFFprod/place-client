@@ -7,13 +7,7 @@
     </template>
     <template #title>
       <n-space>
-        <!-- <a
-          href="https://anyway.fm/"
-          style="text-decoration: none; color: inherit"
-        > -->
-          {{ PageTitle }}
-        <!-- </a> -->
-        <!-- <n-statistic label="pixels" value="xxx" /> -->
+        {{ PageTitle }}
       </n-space>
     </template>
     <template #avatar>
@@ -23,6 +17,14 @@
     </template>
     <template #extra>
       <n-space>
+        <n-switch size="large" v-model:value="canvasStore.isPainting">
+          <template #checked-icon>
+            <n-icon :component="FormatColorFillSharp" />
+          </template>
+          <template #unchecked-icon>
+            <n-icon :component="ColorizeFilled" />
+          </template>
+        </n-switch>
         <n-color-picker
             v-if="sessionStore.isLoggedIn && isOnCanvas && canvasStore.isManualAllowed"
             class="color-picker"
@@ -53,14 +55,17 @@
 </template>
 
 <script>
-import { NPageHeader, NSpace, NButton, NAvatar, NColorPicker, NIcon} from 'naive-ui'
+import { NPageHeader, NSpace, NButton, NAvatar, NColorPicker, NIcon, NSwitch} from 'naive-ui'
 import { sessionStore, UIStore, canvasStore } from './../store.js'
 import ScriptPlayer from './ScriptPlayer.vue'
 import ArrowBack from '@vicons/ionicons5/ArrowBack'
+import ColorizeFilled from '@vicons/material/ColorizeFilled'
+import FormatColorFillSharp from '@vicons/material/FormatColorFillSharp'
 
 export default {
   components: {
     ArrowBack,
+    NSwitch,
     NPageHeader,
     NSpace,
     NButton,
@@ -74,10 +79,13 @@ export default {
   },
   data () {
     return {
+      ColorizeFilled,
+      FormatColorFillSharp,
       iconPath: process.env.BASE_URL + 'icon.png',
       sessionStore,
       UIStore,
       canvasStore,
+      isPainting: true,
       options: [
         {
           label: 'More episodes',

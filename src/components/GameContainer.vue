@@ -346,9 +346,13 @@ export default {
         if(gridX < 0 || gridX > canvasStore.gridXX || gridY < 0 || gridY > canvasStore.gridYY) {
           return;
         } else {
-          this.c = p5.color(canvasStore.selectedColor)
-          canvasStore.colorSelected()
-          this.pp(gridX, gridY, true)
+          if(canvasStore.isPainting) {
+            this.c = p5.color(canvasStore.selectedColor)
+            canvasStore.colorSelected()
+            this.pp(gridX, gridY, true)
+          } else {
+            this.copyColor(gridX, gridY)
+          }
         }
       }
     },
@@ -475,7 +479,7 @@ export default {
     },
     getPixelOwner(x, y) {
       this.HTTP
-        .get('pixels/user/' + canvasStore.canvasId + '/' + x + '/' + y)
+        .get('pixel/user/' + canvasStore.canvasId + '/' + x + '/' + y)
         .then(response => {
           this.pixelOwner = response.data
           this.displayPixelOwner()
@@ -504,8 +508,30 @@ export default {
       var hex = c.toString(16);
       return hex.length == 1 ? "0" + hex : hex;
     },
-    openScript() {
-
+    copyColor(x, y) {
+      this.HTTP
+        .get('pixel/color/'+ canvasStore.canvasId + '/' + x + '/' + y + '/', { headers: {"Authorization" : 'Bearer ' + sessionStore.token} })
+        .then(response => {
+          if(response.data != "") {
+            let msg = "added color to swatches"
+            if(this.messageReactive == undefined) {
+              UIStore.messagePlacement = 'top'
+              this.messageReactive = this.message.create(msg, {
+                type: "success",
+                duration: 0,
+              });
+            } else {
+              this.messageReactive.type = "success"
+              this.messageReactive.content = msg
+            }
+            canvasStore.selectedColor = response.data
+            canvasStore.colorSelected()
+          }
+        })
+        .catch(error => {
+          let e = JSON.parse(error.request.response); 
+          console.log(e.code, e.message)
+        })
     },
     startScript() {
       this.$refs.scriptPlayer.startScript();
