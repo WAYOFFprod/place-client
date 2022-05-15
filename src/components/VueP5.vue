@@ -92,9 +92,9 @@ export default {
         }
       }
       window.addEventListener("wheel", function(e) {
-        console.log('scroll')
+        // console.log('scroll')
         if(e.target.classList.contains('p5Canvas')) { // only pass event if scroll is on top of canvas
-          console.log('here')
+          // console.log('here')
           e.preventDefault();
           t.$emit('scroll', e);
         }

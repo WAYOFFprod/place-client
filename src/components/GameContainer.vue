@@ -475,7 +475,7 @@ export default {
     },
     getPixelOwner(x, y) {
       this.HTTP
-        .get('pixels/' + x + '/' + y)
+        .get('pixels/' + canvasStore.canvasId + '/' + x + '/' + y)
         .then(response => {
           this.pixelOwner = response.data
           this.displayPixelOwner()
