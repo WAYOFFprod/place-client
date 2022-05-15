@@ -127,5 +127,7 @@ export default {
 <style>
 .selector-container {
   padding: 8px;
+  padding-top: 60px;
+  height: 100vh;
 }
 </style>

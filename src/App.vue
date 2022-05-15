@@ -3,10 +3,10 @@
     <n-dialog-provider>
       <n-message-provider :placement="UIStore.messagePlacement">
         <Header />
-        <GameContainer v-if="canvasStore.canvasId > 0"/>
-        <CanvasSelector v-if="canvasStore.canvasId == 0"/>
-        <MenuDrawer />
-        <LoginModal />
+        <game-container v-if="canvasStore.canvasId > 0" class="selector-container"/>
+        <canvas-selector v-if="canvasStore.canvasId == 0" class="selector-container"/>
+        <menu-drawer />
+        <login-modal />
     </n-message-provider>
     </n-dialog-provider>
 </n-config-provider>
@@ -56,14 +56,15 @@ export default {
 body {
   height: 100%;
 }
-.selector-container{
-  padding-top: 60px;
-  height: 100vh;
-} 
 .n-page-header-wrapper {
   position: fixed;
   z-index: 1;
   top: 0;
   width: 100%;
+}
+.selector-container {
+  padding: 8px;
+  padding-top: 60px;
+  height: 100vh;
 }
 </style>

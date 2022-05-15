@@ -80,10 +80,8 @@ export default {
         }
       }
 
-      p5.mouseReleased = (e) => {
-        if(e.target.classList.contains('p5Canvas')) { // only pass event if scroll is on top of canvas
-          t.$emit('mouseReleased', p5);
-        }
+      p5.mouseReleased = () => {
+        t.$emit('mouseReleased', p5);
       }
 
       p5.keyReleased = (e) => {
