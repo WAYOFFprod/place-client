@@ -194,7 +194,7 @@ export default {
               keepAliveOnHover: true
             }
           )
-          this.sessionStore.closeModal()
+          UIStore.closeModal()
         })
         .catch(error => {
           this.errorMessage.error(

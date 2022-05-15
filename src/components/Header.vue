@@ -37,6 +37,9 @@
         <n-button v-if="!sessionStore.isLoggedIn" type="primary" @click="UIStore.toggledrawer()">
           LOGIN / REGISTER
         </n-button>
+        <n-button v-if="sessionStore.isLoggedIn" type="primary" @click="logout">
+          LOGOUT
+        </n-button>
         <n-button v-if="sessionStore.isLoggedIn && isOnCanvas && canvasStore.isScriptAllowed" type="primary" @click="UIStore.toggleScriptDrawer()">
           SCRIPT
         </n-button>
@@ -93,8 +96,11 @@ export default {
   },
   methods: {
     handleBack () {
-      canvasStore.canvasId = 0;
+      canvasStore.canvasId = 0
     },
+    logout() {
+      sessionStore.isLoggedIn = false
+    }
   },
   computed: {
     buttonLabel() {

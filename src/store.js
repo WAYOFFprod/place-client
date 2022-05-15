@@ -181,12 +181,12 @@ const UIStore = reactive({
     this.isRegistrationModalOpen = true
   },
   openLogin() {
-    console.log("LOGIN")
     this.isModalOpen = true
     this.isLoginModalOpen = true
     this.isRegistrationModalOpen = false
   },
   closeModal() {
+    this.isMenuDrawerOpen = false
     this.isModalOpen = false
     this.isLoginModalOpen = false
     this.isRegistrationModalOpen = false

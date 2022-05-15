@@ -1,10 +1,10 @@
 <template>
   <n-drawer v-model:show="UIStore.isMenuDrawerOpen" :width="502" placement="bottom">
       <n-drawer-content title="Colors">
-        <StartMenu 
+        <start-menu 
           v-if="!sessionStore.isLoggedIn && sessionStore.isFinishedConnecting"
           />
-        <ColorSelector
+        <color-selector
           v-if="sessionStore.isLoggedIn"
           class="swatch-container"
           />

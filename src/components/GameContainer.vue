@@ -1,8 +1,8 @@
 <template>
   <n-layout>
-    <ScriptDrawer />
+    <script-drawer />
     <n-layout-content content-style="padding: 0px;">
-      <VueP5 ref="p5vue"
+      <vue-p5 ref="p5vue"
         class="center-block"
         @setup="setup" 
         @draw="draw"
@@ -348,7 +348,7 @@ export default {
         } else {
           this.c = p5.color(canvasStore.selectedColor)
           canvasStore.colorSelected()
-          this.pp(gridX, gridY, 1)
+          this.pp(gridX, gridY, true)
         }
       }
     },
@@ -423,7 +423,7 @@ export default {
       bodyFormData.append('y', y)
       bodyFormData.append('color', c)
       bodyFormData.append('user_id', sessionStore.user.id)
-      bodyFormData.append('is_manual', isManual)
+      bodyFormData.append('is_manual', isManual ? 1 : 0)
       bodyFormData.append('canvas_id', canvasStore.canvasId)
       this.HTTP
         .post('pixels/add', bodyFormData, { headers: {"Authorization" : 'Bearer ' + sessionStore.token} })
