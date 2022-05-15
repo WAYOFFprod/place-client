@@ -34,21 +34,21 @@
             <n-form-item-gi :span="24" label="Make canvas private" path="private">
               <n-switch v-model:value="formValue.private" />
             </n-form-item-gi>
-            <n-form-item-gi :span="12" class="validation-right">
-              <n-button @click="validateAndSave">
-                Save
-              </n-button>
-              <n-button @click="cancel">
-                Cancel
-              </n-button>
-            </n-form-item-gi>
           </n-grid>
+          <n-space justify="space-between">
+            <n-button @click="cancel">
+              Cancel
+            </n-button>
+            <n-button @click="validateAndSave" type="primary">
+              Save
+            </n-button>
+          </n-space>
         </n-form>
     </n-modal>
 </template>
 
 <script>
-import { NModal, NForm, NInput, NFormItemGi, NButton, NGrid, NSwitch, NInputNumber} from 'naive-ui';
+import { NModal, NForm, NInput, NFormItemGi, NButton, NGrid, NSwitch, NInputNumber, NSpace} from 'naive-ui';
 import VueAxios from './common/http-common';
 import { UIStore, sessionStore, canvasStore } from './../store.js'
 export default {
@@ -63,6 +63,7 @@ export default {
     NGrid,
     NSwitch,
     NInputNumber,
+    NSpace,
   },
   data () {
     return {
