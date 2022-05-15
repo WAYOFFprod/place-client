@@ -13,16 +13,17 @@
           :label-width="80"
           :model="formValue"
           :rules="rules"
+          ref="formRef"
         >
           <n-grid :span="24" class="margin-top">
-            <n-form-item-gi :span="24" label="Canvas name" path="name">
-              <n-input v-model:value="formValue.name" :default-value="formValue.name" placeholder="Value" />
+            <n-form-item-gi :span="24" label="Canvas label" path="label">
+              <n-input v-model:value="formValue.label" placeholder="Value" />
             </n-form-item-gi>
             <n-form-item-gi :span="24" label="Width" path="width">
-              <n-input-number :step="100" v-model:value="formValue.width" :default-value="formValue.width" placeholder="1000" />
+              <n-input-number :step="100" v-model:value="formValue.width" :default-value="formValue.width" placeholder="1000" :disabled="!isNew"/>
             </n-form-item-gi>
             <n-form-item-gi :span="24" label="Height" path="height">
-              <n-input-number :step="100" v-model:value="formValue.height" :default-value="formValue.height" placeholder="1000" />
+              <n-input-number :step="100" v-model:value="formValue.height" :default-value="formValue.height" placeholder="1000" :disabled="!isNew"/>
             </n-form-item-gi>
             <n-form-item-gi :span="24" label="Allow manual pixel placement" path="manual">
               <n-switch v-model:value="formValue.manual" />
@@ -34,7 +35,7 @@
               <n-switch v-model:value="formValue.private" />
             </n-form-item-gi>
             <n-form-item-gi :span="12" class="validation-right">
-              <n-button @click="save">
+              <n-button @click="validateAndSave">
                 Save
               </n-button>
               <n-button @click="cancel">
@@ -68,9 +69,8 @@ export default {
       UIStore,
       sessionStore,
       canvasStore,
-      name: this.label,
       formValue: {
-        name: this.label,
+        label: this.label,
         width: this.width,
         height: this.height,
         manual: this.script_allowed,
@@ -78,19 +78,19 @@ export default {
         private: this.private,
       },
       rules: {
-        name: {
+        label: {
           required: true,
-          message: 'Please input your name',
+          message: 'Please enter a label',
           trigger: ['input', 'blur']
         },
         width: {
-          required: true,
-          message: 'Please input a width',
+          validator: this.isWidthMult100,
+          message: this.createFeedback,
           trigger: ['input', 'blur']
         },
         height: {
-          required: true,
-          message: 'Please input a height',
+          validator: this.isHeightMult100,
+          message: this.createFeedback,
           trigger: ['input', 'blur']
         }
       },
@@ -100,19 +100,29 @@ export default {
     closeModal() {
       this.$emit("closeCanvas");
     },
+    validateAndSave() {
+      this.$refs.formRef?.validate((errors) => {
+        if (!errors) {
+          this.save()
+        } else {
+          console.log("errors", errors);
+        }
+      })
+    },
     save() {
+      console.log("triggered")
       if(this.isNew) {
         const bodyFormData = new FormData()
         bodyFormData.append('width', this.formValue.width)
         bodyFormData.append('height', this.formValue.height)
-        bodyFormData.append('label', this.formValue.name)
+        bodyFormData.append('label', this.formValue.label)
         bodyFormData.append('manual_allowed', this.formValue.manual == true ? 1 : 0)
         bodyFormData.append('script_allowed', this.formValue.script == true ? 1 : 0)
         bodyFormData.append('private', this.formValue.private == true ? 1 : 0)
         this.HTTP
           .post('canvas/create', bodyFormData, { headers: {"Authorization" : 'Bearer ' + sessionStore.token} })
           .then(response => {
-            this.$emit("closeCanvas", response.data);
+            this.$emit("closeCanvas", response.data, true)
           })
           .catch(error => {
             let e = JSON.parse(error.request.response); 
@@ -122,14 +132,14 @@ export default {
         const bodyFormData = new FormData()
         bodyFormData.append('width', this.formValue.width)
         bodyFormData.append('height', this.formValue.height)
-        bodyFormData.append('label', this.formValue.name)
+        bodyFormData.append('label', this.formValue.label)
         bodyFormData.append('manual_allowed', this.formValue.manual == true ? 1 : 0)
         bodyFormData.append('script_allowed', this.formValue.script == true ? 1 : 0)
         bodyFormData.append('private', this.formValue.private == true ? 1 : 0)
         this.HTTP
           .post('canvas/'+this.id, bodyFormData, { headers: {"Authorization" : 'Bearer ' + sessionStore.token} })
           .then(response => {
-            this.$emit("closeCanvas", response.data);
+            this.$emit("closeCanvas", response.data, false);
           })
           .catch(error => {
             let e = JSON.parse(error.request.response); 
@@ -141,12 +151,40 @@ export default {
       this.$emit("closeCanvas");
     },
     afterEnter() {
-      this.formValue.name = this.label
+      this.formValue.label = this.label
       this.formValue.width = this.width
       this.formValue.height = this.height
       this.formValue.manual = this.script_allowed == 1 ? true : false
       this.formValue.script = this.manual_allowed == 1 ? true : false
       this.formValue.private = this.private == 1 ? true : false
+    },
+    createStatus (value) {
+      if(value % 100 == 0) {
+        return undefined
+      } else {
+        return 'error'
+      }
+    },
+    createFeedback (value) {
+      if(value % 100 == 0) {
+        return ''
+      } else {
+        return 'it must be a multiple of 100'
+      }
+    },
+    isWidthMult100() {
+      return this.formValue.width % 100 == 0
+    },
+    isHeightMult100() {
+      return this.formValue.height % 100 == 0
+    }
+  },
+  computed: {
+    inputValidationStatus() {
+      return this.createStatus(this.formValue.width)
+    },
+    inputFeedback() {
+      return this.createFeedback(this.formValue.width)
     }
   }
 }

@@ -5,7 +5,6 @@
         <CanvasCard
           :data="canvas"
           @editCanvas="editCanvas"
-          @delCanvas="delCanvas"
         />
       </n-grid-item>
       <n-grid-item v-if="sessionStore.isLoggedIn && canMakeCanvas">
@@ -68,7 +67,6 @@ export default {
       this.HTTP
       .get('canvas', { headers: {"Authorization" : 'Bearer ' + sessionStore.token}})
       .then(response => {
-        console.log(response.data)
         let data = response.data
         canvasStore.canvases = data
       })
@@ -82,38 +80,18 @@ export default {
       this.edit.isOpen = true
       this.edit.value = canvasId
     },
-    delCanvas(canvasId) {
-      this.HTTP
-        .delete('canvas/'+canvasId, { headers: {"Authorization" : 'Bearer ' + sessionStore.token} })
-        .then(response => {
-          console.log("Deleted: ", response)
-          this.closeCanvas()
+    closeCanvas(data, isNew) {
+      if(data) {
+        if(isNew) {
+          canvasStore.canvases.push(data)
+        } else {
           for(let i = 0; i < canvasStore.canvases.length; i++) {
-            if(canvasStore.canvases[i].id == canvasId) {
-              canvasStore.canvases.splice(i, 1)
+            if(canvasStore.canvases[i].id == data.id) {
+              canvasStore.canvases[i] = data
             }
           }
-        })
-        .catch(error => {
-          let e = JSON.parse(error.request.response); 
-          console.log(e.code, e.message)
-          this.closeCanvas()
-        })
-    },
-    closeCanvas(data) {
-      if(data) {
-        let added = false
-        for(let i = 0; i < canvasStore.canvases.length; i++) {
-          if(canvasStore.canvases[i].id == this.edit.value) {
-            canvasStore.canvases[i] = data
-            added = true
-          }
-        }
-        if(!added) {
-          canvasStore.canvases.push(data)
         }
       }
-      
       this.edit.isOpen = false;
     }
   },
@@ -124,7 +102,14 @@ export default {
           return canvasStore.canvases[i]
         }
       }
-      return {}
+      return {
+        label: "Canvas",
+        width: 1000,
+        height: 1000,
+        script_allowed: true,
+        manual_allowed: true,
+        private: false
+      }
     },
     canMakeCanvas() {
       let mine = 0

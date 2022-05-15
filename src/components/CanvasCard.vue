@@ -12,7 +12,17 @@
       </ul>
       <template #action>
         <n-space justify="space-between">
-          <n-button type="error" v-if="sessionStore.isLoggedIn && ownCanvas" @click="delCanvas" value="data.id">Delete</n-button>
+          <n-popconfirm
+            v-if="sessionStore.isLoggedIn && ownCanvas"
+            @positive-click="handlePositiveClick"
+            @negative-click="handleNegativeClick"
+          >
+            <template #trigger>
+              <n-button type="error" value="data.id">Delete</n-button>
+            </template>
+            Are you sure
+          </n-popconfirm>
+          
           <n-button v-if="sessionStore.isLoggedIn && ownCanvas" @click="editCanvas" value="data.id">Edit</n-button>
           <n-button type="primary" @click="openCanvas" value="data.id">Go</n-button>
         </n-space>
@@ -22,16 +32,19 @@
 </template>
 
 <script>
-import { NCard, NLayoutContent, NButton, NSpace } from 'naive-ui'
+import { NCard, NLayoutContent, NButton, NSpace, NPopconfirm } from 'naive-ui'
 import { canvasStore, sessionStore } from './../store'
+import VueAxios from './common/http-common'
 
 export default {
   props: ['data'],
+  mixins: [VueAxios],
   components: {
     NCard,
     NLayoutContent,
     NButton,
-    NSpace
+    NSpace,
+    NPopconfirm,
   },
   data () {
     return {
@@ -64,9 +77,24 @@ export default {
     editCanvas() {
       this.$emit("editCanvas", this.data.id)
     },
-    delCanvas() {
-      this.$emit("delCanvas", this.data.id)
-    }
+    handleNegativeClick() {
+
+    },
+    handlePositiveClick() {
+      this.HTTP
+        .delete('canvas/'+this.data.id, { headers: {"Authorization" : 'Bearer ' + sessionStore.token} })
+        .then(() => {
+          for(let i = 0; i < canvasStore.canvases.length; i++) {
+            if(canvasStore.canvases[i].id == this.data.id) {
+              canvasStore.canvases.splice(i, 1)
+            }
+          }
+        })
+        .catch(error => {
+          let e = JSON.parse(error.request.response); 
+          console.log(e.code, e.message)
+        })
+    },
   },
   computed: {
     ownCanvas() {
