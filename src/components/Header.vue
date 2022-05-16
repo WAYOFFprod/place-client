@@ -17,7 +17,7 @@
     </template>
     <template #extra>
       <n-space>
-        <n-switch size="large" v-model:value="canvasStore.isPainting">
+        <n-switch v-if="sessionStore.isLoggedIn && isOnCanvas" size="large" v-model:value="canvasStore.isPainting">
           <template #checked-icon>
             <n-icon :component="FormatColorFillSharp" />
           </template>
