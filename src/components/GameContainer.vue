@@ -50,6 +50,13 @@ export default {
     this.emitter.on('placePixel', (data) => {
       this.spp(data.x,data.y,data.c)
     })
+    console.log("created")
+    window.addEventListener('wheel', this.removeScroll,{ passive: false })
+  },
+  unmounted() {
+    console.log("stop")
+    window.removeEventListener('wheel', this.removeScroll, false)
+    console.log("removed?")
   },
   mounted() {
     this.$refs.p5vue.loading()
@@ -536,6 +543,10 @@ export default {
     startScript() {
       this.$refs.scriptPlayer.startScript();
     },
+    removeScroll(e) {
+      console.log("blocked")
+      e.preventDefault()
+    }
   },
   computed: {
     hasToken() {

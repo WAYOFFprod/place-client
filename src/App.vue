@@ -39,9 +39,10 @@ export default {
       UIStore,
       darkTheme,
       canvasStore,
+      isStatic: false,
       theme: darkTheme,
     }
-  }
+  },
 }
 </script>
 
