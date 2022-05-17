@@ -24,7 +24,7 @@
           SCRIPT
         </n-button>
       </n-space>
-      <ScriptPlayer 
+      <script-player 
         ref="scriptPlayer"
         @spp="spp"
       />

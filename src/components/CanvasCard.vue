@@ -2,6 +2,11 @@
   <n-layout-content>
     <n-card :title="data.label">
       <template #cover>
+        <canvas-preview 
+          :canvasId="data.id"
+          :width="data.width"
+          :height="data.height"
+        />
         <!-- <img src="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"> -->
       </template>
       <ul>
@@ -35,6 +40,7 @@
 import { NCard, NLayoutContent, NButton, NSpace, NPopconfirm } from 'naive-ui'
 import { canvasStore, sessionStore } from './../store'
 import VueAxios from './common/http-common'
+import CanvasPreview from './CanvasPreview.vue'
 
 export default {
   props: ['data'],
@@ -45,6 +51,7 @@ export default {
     NButton,
     NSpace,
     NPopconfirm,
+    CanvasPreview
   },
   data () {
     return {

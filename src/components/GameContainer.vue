@@ -4,6 +4,7 @@
     <n-layout-content content-style="padding: 0px;">
       <vue-p5 ref="p5vue"
         class="center-block"
+        :c="canvasClass"
         @setup="setup" 
         @draw="draw"
         @loading="drawLoading"
@@ -50,13 +51,10 @@ export default {
     this.emitter.on('placePixel', (data) => {
       this.spp(data.x,data.y,data.c)
     })
-    console.log("created")
     window.addEventListener('wheel', this.removeScroll,{ passive: false })
   },
   unmounted() {
-    console.log("stop")
     window.removeEventListener('wheel', this.removeScroll, false)
-    console.log("removed?")
   },
   mounted() {
     this.$refs.p5vue.loading()
@@ -80,6 +78,7 @@ export default {
       canvasStore,
       sessionStore,
       UIStore,
+      canvasClass: 'p5-main-canvas',
       gridSections: [],
       grab: {
         x: 0,
@@ -192,6 +191,7 @@ export default {
     setup(p5) {
       this.c = p5.color('#ffffff')
       this.canvas = p5.createCanvas(p5.windowWidth, p5.windowHeight);
+      this.canvas.class(this.canvasClass)
       p5.noSmooth()
       p5.resizeCanvas(p5.windowWidth,p5.windowHeight)
       this.center.x = p5.windowWidth / 2;
@@ -376,7 +376,7 @@ export default {
     },
     pinchStop(touch) {
       console.log(touch.screenX, touch.screenY)
-      console.log(this.p5.mouseX, this.p5.mouseY)
+      // console.log(this.p5.mouseX, this.p5.mouseY)
     },
     scroll(e) {
       // this.update.points = false
