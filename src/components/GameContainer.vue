@@ -194,7 +194,8 @@ export default {
     initCanvas() {
       let widthDiff = this.p5.windowWidth / canvasStore.gridXX
       let heightDiff = this.p5.windowHeight / canvasStore.gridYY
-      this.sf = heightDiff
+      let diff = widthDiff < heightDiff ? widthDiff : heightDiff
+      this.sf = diff
       this.screenOff.x = this.center.x - (canvasStore.gridXX / 2)
       this.screenOff.y = this.center.y - (canvasStore.gridYY / 2)
     },
