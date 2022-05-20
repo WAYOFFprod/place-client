@@ -1,5 +1,5 @@
 <template>
-  <n-layout class="selector-container">
+  <n-layout>
     <n-grid :x-gap="12" :y-gap="8" cols="1 600:2 1000:3 1200:4">
       <n-grid-item v-for="canvas in canvasStore.canvases" :key="canvas.id">
         <CanvasCard
@@ -125,9 +125,5 @@ export default {
 </script>
 
 <style>
-.selector-container {
-  padding: 8px;
-  padding-top: 60px;
-  height: 100vh;
-}
+
 </style>

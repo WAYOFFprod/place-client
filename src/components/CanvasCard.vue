@@ -2,10 +2,15 @@
   <n-layout-content>
     <n-card :title="data.label">
       <template #cover>
-        <canvas-preview 
+        <!-- <canvas-preview 
           :canvasId="data.id"
           :width="data.width"
           :height="data.height"
+        /> -->
+        <n-image
+          width="100"
+          :src="previewPath"
+          preview-disabled
         />
         <!-- <img src="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"> -->
       </template>
@@ -37,10 +42,9 @@
 </template>
 
 <script>
-import { NCard, NLayoutContent, NButton, NSpace, NPopconfirm } from 'naive-ui'
+import { NCard, NLayoutContent, NButton, NSpace, NPopconfirm, NImage } from 'naive-ui'
 import { canvasStore, sessionStore } from './../store'
 import VueAxios from './common/http-common'
-import CanvasPreview from './CanvasPreview.vue'
 
 export default {
   props: ['data'],
@@ -51,7 +55,8 @@ export default {
     NButton,
     NSpace,
     NPopconfirm,
-    CanvasPreview
+    NImage,
+    // CanvasPreview
   },
   data () {
     return {
@@ -106,6 +111,15 @@ export default {
   computed: {
     ownCanvas() {
       return this.data.user_id == sessionStore.user.id
+    },
+    previewPath() {
+      console.log(this.data)
+      if(this.data.preview) {
+        return "http://localhost:8001/"+this.data.preview.path
+      } else {
+        return ""
+      }
+      
     }
   }
 }

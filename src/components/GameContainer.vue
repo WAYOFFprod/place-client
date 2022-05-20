@@ -22,10 +22,10 @@
 <script>
 import VueP5 from './VueP5.vue'
 import ScriptDrawer from './ScriptDrawer.vue'
-//mport VueAxios from './VueAxios.vue'
 import { canvasStore, sessionStore, UIStore } from './../store.js'
 import VueAxios from './common/http-common'
-import GridSection from './common/GridSection.js'
+import GridSection from './common/GridSection'
+import CanvasPreview from './common/CanvasPreview'
 import {NLayout, NLayoutContent} from 'naive-ui'
 import {useMessage} from 'naive-ui'
 //import axios from 'axios';
@@ -182,6 +182,7 @@ export default {
         for(let i = 0; i < this.gridSections.length; i++) {
           this.gridSections[i].draw()
         }
+        this.savePreview()
         this.$refs.p5vue.finishedLoading()
       })
     },
@@ -544,8 +545,30 @@ export default {
       this.$refs.scriptPlayer.startScript();
     },
     removeScroll(e) {
-      console.log("blocked")
+      //console.log("blocked")
       e.preventDefault()
+    },
+    savePreview() {
+      let pixels = []
+      for(let i = 0; i < this.gridSections.length; i++) {
+        pixels = Object.assign([], pixels, this.gridSections[i].pixels)
+      }
+      let cPreview = new CanvasPreview(this.p5, pixels, canvasStore.gridXX, canvasStore.gridYY)
+      let image = cPreview.start()
+      const bodyFormData = new FormData()
+      bodyFormData.append('width', canvasStore.gridXX)
+      bodyFormData.append('height', canvasStore.gridYY)
+      bodyFormData.append('name', 'canvas-'+ canvasStore.canvasId)
+      bodyFormData.append('canvas_id', canvasStore.canvasId)
+      bodyFormData.append('file', image.canvas.toDataURL())
+      this.HTTP
+        .post('add-preview', bodyFormData, { headers: {"Authorization" : 'Bearer ' + sessionStore.token} })
+        .then(response => {
+          console.log(response)
+        })
+        .catch(error => {
+          console.log(error)
+        })
     }
   },
   computed: {

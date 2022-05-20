@@ -39,7 +39,6 @@ export default class GridSection {
         const y =  Math.floor(key / this.gridXX) - this.offset.y
 
         // only render if in bounding box
-        //this.drawPixel(x * this.s, + y * this.s, color)
         this.img.set(x, y, [this.p5.red(color), this.p5.green(color), this.p5.blue(color), 255]);
       }
     }
