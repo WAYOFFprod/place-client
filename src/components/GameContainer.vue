@@ -105,9 +105,15 @@ export default {
       c: null,
       echo: null,
       sf: 1,
+      sfDrift: 1,
       oldSf: 1,
       mouseDown: false,
       center: {
+        x: 0,
+        y: 0
+      },
+      zoomStep: 1,
+      offDrift: {
         x: 0,
         y: 0
       },
@@ -195,6 +201,7 @@ export default {
       let widthDiff = this.p5.windowWidth / canvasStore.gridXX
       let heightDiff = this.p5.windowHeight / canvasStore.gridYY
       let diff = widthDiff < heightDiff ? widthDiff : heightDiff
+      this.sfDrift = diff
       this.sf = diff
       this.screenOff.x = this.center.x - (canvasStore.gridXX / 2)
       this.screenOff.y = this.center.y - (canvasStore.gridYY / 2)
@@ -235,6 +242,14 @@ export default {
       p5.text('loading', this.center.x - 38, this.center.y + 80);
     },
     draw (p5) {
+      if(this.zoomStep < 1) {
+        // console.log("zoomestep", this.zoomStep, this.sf)
+        this.sf = p5.lerp(this.sf, this.sfDrift, this.zoomStep)
+        this.screenOff.x = p5.lerp(this.screenOff.x, this.offDrift.x, this.zoomStep)
+        this.screenOff.y = p5.lerp(this.screenOff.y, this.offDrift.y, this.zoomStep)
+
+        this.zoomStep += 0.1
+      }
       //drag canvas
       if(this.mouseDown) {
         this.screenOff.x = (p5.mouseX - this.grab.x)  / this.sf
@@ -365,9 +380,17 @@ export default {
           return;
         } else {
           if(canvasStore.isPainting) {
-            this.c = p5.color(canvasStore.selectedColor)
-            canvasStore.colorSelected()
-            this.pp(gridX, gridY, true)
+            if(this.sf >= 6) {
+              this.c = p5.color(canvasStore.selectedColor)
+              canvasStore.colorSelected()
+              this.pp(gridX, gridY, true)
+            } else {
+              this.sfDrift = 6
+              console.log(this.screenOffset.x)
+              this.offDrift.x = this.center.x - (p5.mouseX - this.screenOffset.x) / this.sf
+              this.offDrift.y = this.center.y - (p5.mouseY - this.screenOffset.y) / this.sf
+              this.zoomStep = 0
+            }
           } else {
             this.copyColor(gridX, gridY)
           }
