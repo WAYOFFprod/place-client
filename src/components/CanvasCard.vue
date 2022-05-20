@@ -109,7 +109,7 @@ export default {
     previewPath() {
       console.log(this.data)
       if(this.data.preview) {
-        return "http://localhost:8001/"+this.data.preview.path
+        return process.env.VUE_APP_WEBSOCKET_SERVER + ":8001/" +this.data.preview.path
       } else {
         return ""
       }
