@@ -2,17 +2,12 @@
   <n-layout-content>
     <n-card :title="data.label">
       <template #cover>
-        <!-- <canvas-preview 
-          :canvasId="data.id"
-          :width="data.width"
-          :height="data.height"
-        /> -->
         <n-image
           width="100"
           :src="previewPath"
           preview-disabled
+          class="whitebg"
         />
-        <!-- <img src="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"> -->
       </template>
       <ul>
         <li>Size: {{ data.width }} x {{ data.height }}</li>
@@ -56,7 +51,6 @@ export default {
     NSpace,
     NPopconfirm,
     NImage,
-    // CanvasPreview
   },
   data () {
     return {
@@ -132,5 +126,8 @@ ul {
 }
 li {
 
+}
+.whitebg {
+  background-color: white;
 }
 </style>
