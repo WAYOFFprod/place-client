@@ -31,7 +31,6 @@ export default {
     }
   },
   mounted() {   
-    console.log("mounted", this.p5)
     if(this.p5 == null) {
       const t = this;
       const script = function (p5) {

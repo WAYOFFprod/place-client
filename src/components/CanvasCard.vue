@@ -3,7 +3,6 @@
     <n-card :title="data.label">
       <template #cover>
         <n-image
-          width="100"
           :src="previewPath"
           preview-disabled
           class="whitebg"
@@ -126,7 +125,12 @@ ul {
 li {
 
 }
+.n-image {
+  display: block;
+}
 .whitebg {
   background-color: white;
+  image-rendering: pixelated;
+
 }
 </style>
