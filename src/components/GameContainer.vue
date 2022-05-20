@@ -152,6 +152,7 @@ export default {
       .get('canvas/'+canvasStore.canvasId)
       .then(response => {
         let data = response.data[0]
+        console.log("got data")
         canvasStore.gridXX = data.width
         canvasStore.gridYY = data.height
         canvasStore.isPrivate = data.private
@@ -160,7 +161,8 @@ export default {
         canvasStore.ss = 100
         canvasStore.tileSize = data.width / 100
         canvasStore.name = data.label
-        
+        this.initCanvas()
+
         // create sections
         for(let y = 0; y < canvasStore.gridXX / canvasStore.ss; y++) {
           for(let x = 0; x < canvasStore.gridXX / canvasStore.ss; x++) {
@@ -188,6 +190,13 @@ export default {
     },
     changeColor(c) {
       canvasStore.selectedColor = c
+    },
+    initCanvas() {
+      let widthDiff = this.p5.windowWidth / canvasStore.gridXX
+      let heightDiff = this.p5.windowHeight / canvasStore.gridYY
+      this.sf = heightDiff
+      this.screenOff.x = this.center.x - (canvasStore.gridXX / 2)
+      this.screenOff.y = this.center.y - (canvasStore.gridYY / 2)
     },
     setup(p5) {
       this.c = p5.color('#ffffff')
