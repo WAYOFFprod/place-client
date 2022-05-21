@@ -127,6 +127,7 @@ const scriptStore = reactive({
 })
 
 const copySS = reactive({
+  active: false,
   bound: {
     start: {
       x: 0,

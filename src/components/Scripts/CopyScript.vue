@@ -48,10 +48,10 @@ export default {
   },
   methods: {
     preview() {
-      console.log("placeholder preview")
+      copySS.active = true
     },
     clear() {
-      console.log("placeholder clear")
+      copySS.active = false
     }
   }
 }

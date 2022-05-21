@@ -22,7 +22,7 @@
 <script>
 import VueP5 from './VueP5.vue'
 import ScriptDrawer from './ScriptDrawer.vue'
-import { canvasStore, sessionStore, UIStore } from './../store.js'
+import { canvasStore, sessionStore, UIStore, copySS } from './../store.js'
 import VueAxios from './common/http-common'
 import GridSection from './common/GridSection'
 import CanvasPreview from './common/CanvasPreview'
@@ -79,6 +79,7 @@ export default {
       canvasStore,
       sessionStore,
       UIStore,
+      copySS,
       canvasClass: 'p5-main-canvas',
       gridSections: [],
       grab: {
@@ -287,6 +288,9 @@ export default {
           }
         }
       }
+      if(copySS.active) {
+        this.drawBounds(p5)
+      }
 
       // mouse position
       let ratioX = (p5.mouseX - this.screenOffset.x)
@@ -455,6 +459,16 @@ export default {
       p5.strokeWeight(0)
       p5.fill(c)
       p5.square(x + (1/3), y + (1/3), 1/3)
+    },
+    drawBounds(p5) {
+      p5.strokeWeight(0.3)
+      //p5.stroke()
+      p5.noFill()
+      const x = copySS.bound.start.x
+      const y = copySS.bound.start.y
+      const w = copySS.bound.end.x - x
+      const h = copySS.bound.end.y - y
+      p5.rect(x, y, w, h);
     },
     spp(x,y,c) {
       this.c = this.p5.color(c)
