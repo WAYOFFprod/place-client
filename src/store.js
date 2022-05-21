@@ -119,6 +119,49 @@ const sessionStore = reactive({
 })
 
 const scriptStore = reactive({
+  isStarted: false,
+  isPaused: false,
+  percentage: 0,
+  scriptType: "array",
+  isScriptRunning: false,
+})
+
+const copySS = reactive({
+  bound: {
+    start: {
+      x: 0,
+      y: 0
+    },
+    end: {
+      x: 20,
+      y: 20
+    }
+  },
+  isLoaded: false,
+  saveScriptData() {
+    localStorage.setItem('bound.start.x', this.bound.start.x)
+    localStorage.setItem('bound.start.y', this.bound.start.y)
+    localStorage.setItem('bound.end.x', this.bound.end.x)
+    localStorage.setItem('bound.end.y', this.bound.end.y)
+  },
+  loadScriptData() {
+    if(localStorage.getItem('bound.start.x') != null) {
+      this.bound.start.x = parseInt(localStorage.getItem('bound.start.x'))
+    }
+    if(localStorage.getItem('bound.start.y') != null) {
+      this.bound.start.y = parseInt(localStorage.getItem('bound.start.y'))
+    }
+    if(localStorage.getItem('bound.end.x') != null) {
+      this.bound.end.x = parseInt(localStorage.getItem('bound.end.x'))
+    }
+    if(localStorage.getItem('bound.end.y') != null) {
+      this.bound.end.y = parseInt(localStorage.getItem('bound.end.y'))
+    }
+    this.isLoaded = true
+  }
+})
+
+const arraySS = reactive({
   pixelArray: '[0,0,0,0,0],\n' +
     "[0,0,1,0,0],\n" +
     "[0,1,1,1,0],\n" +
@@ -139,7 +182,13 @@ const scriptStore = reactive({
     id: '1',
     color: '#ffffff'
   }],
-  isScriptRunning: false,
+  colors: [],
+  sp: {
+    x: 0,
+    y: 0
+  },
+  pixels: [],
+  isLoaded: false,
   saveScriptData() {
     localStorage.setItem('pixel_array', this.pixelArray)
     localStorage.setItem('store_position', JSON.stringify(this.start))
@@ -159,6 +208,7 @@ const scriptStore = reactive({
     if(localStorage.getItem('selected_color_list')!= null) {
       this.selectedColorList = JSON.parse(localStorage.getItem('selected_color_list'))
     }
+    this.isLoaded = true
   }
 })
 
@@ -194,4 +244,4 @@ const UIStore = reactive({
   }
 })
 
-export {canvasStore, sessionStore, scriptStore, UIStore}
+export {canvasStore, sessionStore, scriptStore, UIStore, arraySS, copySS }
