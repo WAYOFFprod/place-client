@@ -138,6 +138,7 @@ const copySS = reactive({
       y: 20
     }
   },
+  pixelArray: [],
   isLoaded: false,
   saveScriptData() {
     localStorage.setItem('bound.start.x', this.bound.start.x)

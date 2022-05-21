@@ -41,8 +41,9 @@ export default {
       seconds: 0,
     }
   },
-  created() {
-    
+  unmounted() {
+    scriptStore.isStarted = false
+    scriptStore.isPaused = true
   },
   methods: {
     toggleButton() {
@@ -54,6 +55,9 @@ export default {
       }
     },
     startScript() {
+      if(scriptStore.isStarted) return
+      scriptStore.isStarted = true
+
       switch (scriptStore.scriptType) {
         case 'array':
           this.drawPreview()
@@ -66,13 +70,50 @@ export default {
       }
     },
     async copyContent() {
+      this.emitter.emit("storePixel")
+      scriptStore.isStarted = false
 
+      arraySS.selectedColorList = []
+      arraySS.pixelArray = ""
+      for(let y = 0; y < copySS.pixelArray.length; y++) {
+        arraySS.pixelArray += "["
+        for (let x = 0; x < copySS.pixelArray[y].length; x++) {
+          let c = copySS.pixelArray[y][x]
+          let colorIndex = undefined
+          if(c == false) {
+            colorIndex = -1
+          }
+          
+          let existingColor = arraySS.selectedColorList.filter(e => e.color === c)
+          console.log(existingColor)
+          if(existingColor.length > 0){
+            colorIndex = existingColor[0].id
+          }
+
+          if(colorIndex === undefined) {
+            colorIndex = arraySS.selectedColorList.length
+            arraySS.selectedColorList.push({
+              id: colorIndex,
+              color: c
+            })
+          }
+          
+          arraySS.pixelArray += colorIndex
+          if(x < copySS.pixelArray[y].length - 1) {
+            arraySS.pixelArray += ","
+          }
+        }
+        arraySS.pixelArray += "]"
+        if(y < copySS.pixelArray.length - 1) {
+          arraySS.pixelArray += ",\n"
+        }
+      }
+      console.log(arraySS.pixelArray)
+      // save starting bound as offset
+      arraySS.start.x = copySS.bound.start.x
+      arraySS.start.y = copySS.bound.start.y
     },
     async drawPreview() {
-      if(scriptStore.isStarted) return
-      scriptStore.isStarted = true
-      
-      
       if(!arraySS.pixels) return
       let size = arraySS.pixels.length * arraySS.pixels[0].length - (arraySS.offset.x + arraySS.offset.y + (arraySS.offset.x * arraySS.offset.y))
       let count = 0
