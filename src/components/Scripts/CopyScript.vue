@@ -48,10 +48,10 @@ export default {
   },
   methods: {
     preview() {
-
+      console.log("placeholder preview")
     },
     clear() {
-      
+      console.log("placeholder clear")
     }
   }
 }
