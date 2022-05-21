@@ -8,12 +8,20 @@
           class="whitebg"
         />
       </template>
-      <ul>
-        <li>Size: {{ data.width }} x {{ data.height }}</li>
-        <li>Pixel placement: {{ isAllowed(data.script_allowed, data.manual_allowed) }}</li>
-        <li>Owner: {{ data.user.name }}</li>
-        <li>Visibility: {{ isPrivate(data.private) }}</li>
-      </ul>
+      <n-descriptions label-placement="top">
+        <n-descriptions-item label="Size" :span="2">
+          {{ data.width }} x {{ data.height }}
+        </n-descriptions-item>
+        <n-descriptions-item label="Pixel placement" :span="2">
+          {{ isAllowed(data.script_allowed, data.manual_allowed) }}
+        </n-descriptions-item>
+        <n-descriptions-item label="Owner" :span="2">
+          {{ data.user.name }}
+        </n-descriptions-item>
+        <n-descriptions-item label="Visibility" :span="2">
+          {{ isPrivate(data.private) }}
+        </n-descriptions-item>
+      </n-descriptions>
       <template #action>
         <n-space justify="space-between">
           <n-popconfirm
@@ -36,7 +44,7 @@
 </template>
 
 <script>
-import { NCard, NLayoutContent, NButton, NSpace, NPopconfirm, NImage } from 'naive-ui'
+import { NCard, NLayoutContent, NButton, NSpace, NPopconfirm, NImage, NDescriptions, NDescriptionsItem } from 'naive-ui'
 import { canvasStore, sessionStore } from './../store'
 import VueAxios from './common/http-common'
 
@@ -50,6 +58,8 @@ export default {
     NSpace,
     NPopconfirm,
     NImage,
+    NDescriptions,
+    NDescriptionsItem
   },
   data () {
     return {
@@ -118,13 +128,6 @@ export default {
 </script>
 
 <style>
-ul {
-  list-style-type: none;
-  padding-left: 8px;
-}
-li {
-
-}
 .n-image {
   display: block;
 }

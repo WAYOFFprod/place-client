@@ -33,13 +33,10 @@
             v-model:value="canvasStore.selectedColor"
             :modes="['hex']"
           />
-        <n-button v-if="sessionStore.isLoggedIn && isOnCanvas && canvasStore.isManualAllowed" type="primary" @click="UIStore.toggledrawer()">
-          COLORS
-        </n-button>
         <n-button v-if="!sessionStore.isLoggedIn" type="primary" @click="UIStore.toggledrawer()">
           LOGIN / REGISTER
         </n-button>
-        <n-button v-if="sessionStore.isLoggedIn" type="primary" @click="logout">
+        <n-button v-if="sessionStore.isLoggedIn && !isOnCanvas" type="primary" @click="logout">
           LOGOUT
         </n-button>
         <n-button v-if="sessionStore.isLoggedIn && isOnCanvas && canvasStore.isScriptAllowed" type="primary" @click="UIStore.toggleScriptDrawer()">

@@ -1,97 +1,73 @@
 <template>
-  <n-drawer v-model:show="UIStore.isScriptDrawerOpen" :width="502" placement="top" :on-after-leave="closeDrawer" :on-after-enter="openDrawer">
-    <n-drawer-content title="Colors">
-        <n-scrollbar x-scrollable>
-          <n-space>
-            <n-space vertical>
-              <n-form-item label="Array" path="selectValue">
-                <n-input
-                  v-model:value="scriptStore.pixelArray"
-                  type="textarea"
-                  placeholder="Basic Textarea"
-                />
-              </n-form-item>
-            </n-space>
-            <n-space vertical>
-              <n-form-item  label="Top Left corner X" path="start.x">
-                <n-input-number v-model:value="scriptStore.start.x" clearable />
-              </n-form-item>
-              <n-form-item  label="Top Left corner Y" path="start.y">
-                <n-input-number v-model:value="scriptStore.start.y" clearable />
-              </n-form-item>
-            </n-space>
-             <n-space vertical>
-              <n-form-item  label="Offset X" path="offset.x">
-                <n-input-number v-model:value="scriptStore.offset.x" clearable />
-              </n-form-item>
-              <n-form-item  label="Offset Y" path="offset.y">
-                <n-input-number v-model:value="scriptStore.offset.y" clearable />
-              </n-form-item>
-            </n-space>
-            <n-space vertical>
-              <n-scrollbar y-scrollable>
-                <n-dynamic-input v-model:value="scriptStore.selectedColorList" :on-create="onCreateColor">
-                  <template #create-button-default>
-                    {{value}}
-                  </template>
-                  <template #default="{ value }">
-                    <!-- <n-input v-model:value="value.id" type="text" /> -->
-                    <span class="id-val">{{ value.id }}</span>
-                    <n-color-picker
-                      class="color-picker"
-                      v-model:value="value.color"
-                      :show-alpha="false"
-                      :modes="['hex']"
-                    />
-                  </template>
-                </n-dynamic-input>
-              </n-scrollbar>
-            </n-space>
-          </n-space>
-        </n-scrollbar>
-      </n-drawer-content>
-    </n-drawer>
+  <n-drawer v-model:show="UIStore.isScriptDrawerOpen" :height="height" placement="top" :on-after-leave="closeDrawer" :on-after-enter="openDrawer">
+    <n-drawer-content>
+      <template #header>
+        <n-space>
+          <n-space vertical >Script</n-space> <n-select size="small" v-model:value="scriptStore.scriptType" :options="scriptOptions" />
+        </n-space>
+      </template>
+        <array-script ref="array" v-if="scriptStore.scriptType == 'array'"></array-script>
+        <copy-script ref="copy" v-if="scriptStore.scriptType == 'copy'"></copy-script>
+      <template #footer>
+        <n-button @click="UIStore.toggleScriptDrawer()" >Close</n-button>
+      </template>
+    </n-drawer-content>
+  </n-drawer>
 </template>
 
 <script>
 import { canvasStore, scriptStore, UIStore } from './../store.js'
-import { NDrawer, NDrawerContent, NScrollbar, NInput, NSpace, NInputNumber, NFormItem, NDynamicInput, NColorPicker} from 'naive-ui'
+import { NDrawer, NDrawerContent, NSpace, NButton, NSelect} from 'naive-ui'
+import ArrayScript from './Scripts/ArrayScript.vue'
+import CopyScript from './Scripts/CopyScript.vue'
 
 export default {
   components: {
+    ArrayScript,
+    CopyScript,
     NDrawer,
     NDrawerContent,
-    NScrollbar,
-    NInput,
     NSpace,
-    NInputNumber,
-    NFormItem,
-    NDynamicInput,
-    NColorPicker
+    NButton,
+    NSelect
+  },
+  created() {
   },
   data () {
     return {
       canvasStore,
       scriptStore,
       UIStore,
+      height: '95%',
+      scriptOptions: [
+        {
+          label: "Array",
+          value: "array",
+        },
+        {
+          label: "Copy",
+          value: "copy"
+        }
+      ]
     }
   },
   methods: {
     closeDrawer() {
-      this.emitter.emit("preview")
+      this.preview()
     },
     openDrawer() {
-      this.emitter.emit("clear")
+      this.clear()
     },
     startScript() {
-      this.scriptStore.isScriptRunning = true
+      scriptStore.isScriptRunning = true
+      this.$refs[scriptStore.scriptType].startScript()
     },
-    onCreateColor() {
-        return {
-          id: scriptStore.selectedColorList.length,
-          color: ''
-        };
-      }
+    preview() {
+      this.$refs[scriptStore.scriptType].preview()
+    },
+    clear() {
+      this.$refs[scriptStore.scriptType].clear()
+    }
   },
   computed: {
     buttonLabel() {
@@ -101,28 +77,11 @@ export default {
         return "RUN"
       }
     },
-    colorList () {
-      const colorSelect = []
-      for (let i = 0; i < canvasStore.colors.length; i++) {
-        const element = canvasStore.colors[i];
-        colorSelect.push({
-          label: element,
-          value: element,
-        })
-      }
-      return colorSelect
-    }
   }
 }
 </script>
 
 <style>
-.half-width {
-  width: 50%;
-}
-.color-picker {
-  min-width: 100px;
-}
 .id-val {
   height: 100%;
   text-align: center;

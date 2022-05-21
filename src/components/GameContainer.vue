@@ -22,7 +22,7 @@
 <script>
 import VueP5 from './VueP5.vue'
 import ScriptDrawer from './ScriptDrawer.vue'
-import { canvasStore, sessionStore, UIStore } from './../store.js'
+import { canvasStore, sessionStore, UIStore, copySS, arraySS } from './../store.js'
 import VueAxios from './common/http-common'
 import GridSection from './common/GridSection'
 import CanvasPreview from './common/CanvasPreview'
@@ -52,6 +52,9 @@ export default {
     this.emitter.on('placePixel', (data) => {
       this.spp(data.x,data.y,data.c)
     })
+    this.emitter.on('storePixel', () => {
+      this.storePixel()
+    })
     window.addEventListener('wheel', this.removeScroll,{ passive: false })
   },
   unmounted() {
@@ -79,6 +82,8 @@ export default {
       canvasStore,
       sessionStore,
       UIStore,
+      copySS,
+      arraySS,
       canvasClass: 'p5-main-canvas',
       gridSections: [],
       grab: {
@@ -287,6 +292,9 @@ export default {
           }
         }
       }
+      if(copySS.active) {
+        this.drawBounds(p5)
+      }
 
       // mouse position
       let ratioX = (p5.mouseX - this.screenOffset.x)
@@ -456,6 +464,16 @@ export default {
       p5.fill(c)
       p5.square(x + (1/3), y + (1/3), 1/3)
     },
+    drawBounds(p5) {
+      p5.strokeWeight(0.3)
+      //p5.stroke()
+      p5.noFill()
+      const x = copySS.bound.start.x
+      const y = copySS.bound.start.y
+      const w = copySS.bound.end.x - x
+      const h = copySS.bound.end.y - y
+      p5.rect(x, y, w, h);
+    },
     spp(x,y,c) {
       this.c = this.p5.color(c)
       this.pp(x,y, false)
@@ -541,6 +559,24 @@ export default {
         this.messageReactive.type = 'loading'
       }
       this.lastUpdate = new Date()
+    },
+    storePixel() {
+      const x = copySS.bound.start.x
+      const y = copySS.bound.start.y
+      const x2 = copySS.bound.end.x
+      const y2 = copySS.bound.end.y
+
+      copySS.pixelArray = []
+      for(let iy = y; iy < y2; iy++) {
+        copySS.pixelArray[iy - y] = []
+        for(let ix = x; ix < x2; ix++) {
+          const xSec = Math.floor(ix / canvasStore.ss)
+          const ySec = Math.floor(iy / canvasStore.ss)
+          let iSec = xSec + ((canvasStore.gridXX / canvasStore.ss) * ySec)
+          const pi = ix + (canvasStore.gridXX * iy)
+          copySS.pixelArray[iy - y][ix - x] = this.gridSections[iSec].getPixel(pi)
+        }
+      }
     },
     rgbToHex(c) {
       return "#" + this.componentToHex(c[0]) + this.componentToHex(c[1]) + this.componentToHex(c[2])
