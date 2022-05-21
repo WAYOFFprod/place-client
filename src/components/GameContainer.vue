@@ -26,8 +26,9 @@ import { canvasStore, sessionStore, UIStore } from './../store.js'
 import VueAxios from './common/http-common'
 import GridSection from './common/GridSection'
 import CanvasPreview from './common/CanvasPreview'
-import {NLayout, NLayoutContent} from 'naive-ui'
-import {useMessage} from 'naive-ui'
+import {NLayout, NLayoutContent, NButton, NAvatar} from 'naive-ui'
+import {useMessage, useNotification} from 'naive-ui'
+import { h } from "vue";
 //import axios from 'axios';
 
 export default {
@@ -133,6 +134,7 @@ export default {
         amp: 5 // amplitude of oscilation
       },
       message: useMessage(),
+      notification: useNotification(),
       active: false, // color and login drawer
       sd: {
         active: false, // script drawer,
@@ -554,19 +556,30 @@ export default {
         .get('pixel/color/'+ canvasStore.canvasId + '/' + x + '/' + y + '/', { headers: {"Authorization" : 'Bearer ' + sessionStore.token} })
         .then(response => {
           if(response.data != "") {
-            let msg = "added color to swatches"
-            if(this.messageReactive == undefined) {
-              UIStore.messagePlacement = 'top'
-              this.messageReactive = this.message.create(msg, {
-                type: "success",
-                duration: 0,
-              });
-            } else {
-              this.messageReactive.type = "success"
-              this.messageReactive.content = msg
-            }
             canvasStore.selectedColor = response.data
-            canvasStore.colorSelected()
+            const n = this.notification.create({
+              title: 'add color to swatches?',
+              duration: 5000,
+              avatar: () => h(NAvatar, {
+                size: 'small',
+                round: true,
+                style: {
+                  color: 'yellow',
+                  backgroundColor: response.data
+                }
+              }),
+              action: () => h(NButton, {
+                text: true,
+                type: "primary",
+                onClick: () => {
+                  canvasStore.selectedColor = response.data
+                  canvasStore.colorSelected()
+                  n.destroy();
+                }
+              }, {
+                default: () => "Add to swatch"
+              })
+            })
           }
         })
         .catch(error => {
@@ -684,5 +697,10 @@ export default {
 }
 body {
   margin: 0;
+}
+.swatch {
+  width: 50px;
+  height: 50px;
+  display: block;
 }
 </style>
