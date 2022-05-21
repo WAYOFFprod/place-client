@@ -244,7 +244,6 @@ export default {
     },
     draw (p5) {
       if(this.zoomStep < 1) {
-        // console.log("zoomestep", this.zoomStep, this.sf)
         let powStep = Math.pow(this.zoomStep, 2)
         this.sf = p5.lerp(this.sf, this.sfDrift, powStep)
         this.screenOff.x = p5.lerp(this.screenOff.x, this.offDrift.x, this.zoomStep)
