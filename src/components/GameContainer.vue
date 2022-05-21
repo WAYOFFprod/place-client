@@ -591,7 +591,6 @@ export default {
       this.$refs.scriptPlayer.startScript();
     },
     removeScroll(e) {
-      //console.log("blocked")
       e.preventDefault()
     },
     savePreview() {
