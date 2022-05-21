@@ -1,5 +1,6 @@
 <template>
 <n-config-provider :theme="theme">
+  <n-notification-provider>
     <n-dialog-provider>
       <n-message-provider :placement="UIStore.messagePlacement">
         <Header />
@@ -7,8 +8,9 @@
         <canvas-selector v-if="canvasStore.canvasId == 0" class="selector-container"/>
         <menu-drawer />
         <login-modal />
-    </n-message-provider>
+      </n-message-provider>
     </n-dialog-provider>
+  </n-notification-provider>
 </n-config-provider>
 </template>
 
@@ -18,7 +20,7 @@ import CanvasSelector from './components/CanvasSelector.vue'
 import MenuDrawer from './components/MenuDrawer.vue'
 import LoginModal from './components/LoginModal.vue'
 import Header from './components/Header.vue'
-import { NConfigProvider, NMessageProvider, NDialogProvider } from 'naive-ui'
+import { NConfigProvider, NMessageProvider, NDialogProvider, NNotificationProvider} from 'naive-ui'
 import { darkTheme } from 'naive-ui'
 import { UIStore, canvasStore } from './store.js'
 
@@ -30,6 +32,7 @@ export default {
     Header,
     MenuDrawer,
     LoginModal,
+    NNotificationProvider,
     NMessageProvider,
     NDialogProvider,
     NConfigProvider

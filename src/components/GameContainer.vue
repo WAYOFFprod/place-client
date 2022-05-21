@@ -26,8 +26,9 @@ import { canvasStore, sessionStore, UIStore } from './../store.js'
 import VueAxios from './common/http-common'
 import GridSection from './common/GridSection'
 import CanvasPreview from './common/CanvasPreview'
-import {NLayout, NLayoutContent} from 'naive-ui'
-import {useMessage} from 'naive-ui'
+import {NLayout, NLayoutContent, NButton, NAvatar} from 'naive-ui'
+import {useMessage, useNotification} from 'naive-ui'
+import { h } from "vue";
 //import axios from 'axios';
 
 export default {
@@ -133,6 +134,7 @@ export default {
         amp: 5 // amplitude of oscilation
       },
       message: useMessage(),
+      notification: useNotification(),
       active: false, // color and login drawer
       sd: {
         active: false, // script drawer,
@@ -158,7 +160,6 @@ export default {
       .get('canvas/'+canvasStore.canvasId)
       .then(response => {
         let data = response.data[0]
-        console.log("got data")
         canvasStore.gridXX = data.width
         canvasStore.gridYY = data.height
         canvasStore.isPrivate = data.private
@@ -243,7 +244,6 @@ export default {
     },
     draw (p5) {
       if(this.zoomStep < 1) {
-        // console.log("zoomestep", this.zoomStep, this.sf)
         let powStep = Math.pow(this.zoomStep, 2)
         this.sf = p5.lerp(this.sf, this.sfDrift, powStep)
         this.screenOff.x = p5.lerp(this.screenOff.x, this.offDrift.x, this.zoomStep)
@@ -387,7 +387,6 @@ export default {
               this.pp(gridX, gridY, true)
             } else {
               this.sfDrift = 6
-              console.log(this.screenOffset.x)
               this.offDrift.x = this.center.x - (p5.mouseX - this.screenOffset.x) / this.sf
               this.offDrift.y = this.center.y - (p5.mouseY - this.screenOffset.y) / this.sf
               this.zoomStep = 0
@@ -555,19 +554,30 @@ export default {
         .get('pixel/color/'+ canvasStore.canvasId + '/' + x + '/' + y + '/', { headers: {"Authorization" : 'Bearer ' + sessionStore.token} })
         .then(response => {
           if(response.data != "") {
-            let msg = "added color to swatches"
-            if(this.messageReactive == undefined) {
-              UIStore.messagePlacement = 'top'
-              this.messageReactive = this.message.create(msg, {
-                type: "success",
-                duration: 0,
-              });
-            } else {
-              this.messageReactive.type = "success"
-              this.messageReactive.content = msg
-            }
             canvasStore.selectedColor = response.data
-            canvasStore.colorSelected()
+            const n = this.notification.create({
+              title: 'add color to swatches?',
+              duration: 5000,
+              avatar: () => h(NAvatar, {
+                size: 'small',
+                round: true,
+                style: {
+                  color: 'yellow',
+                  backgroundColor: response.data
+                }
+              }),
+              action: () => h(NButton, {
+                text: true,
+                type: "primary",
+                onClick: () => {
+                  canvasStore.selectedColor = response.data
+                  canvasStore.colorSelected()
+                  n.destroy();
+                }
+              }, {
+                default: () => "Add to swatch"
+              })
+            })
           }
         })
         .catch(error => {
@@ -579,7 +589,6 @@ export default {
       this.$refs.scriptPlayer.startScript();
     },
     removeScroll(e) {
-      //console.log("blocked")
       e.preventDefault()
     },
     savePreview() {
@@ -685,5 +694,10 @@ export default {
 }
 body {
   margin: 0;
+}
+.swatch {
+  width: 50px;
+  height: 50px;
+  display: block;
 }
 </style>
