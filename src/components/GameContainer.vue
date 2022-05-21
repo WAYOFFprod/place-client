@@ -160,7 +160,6 @@ export default {
       .get('canvas/'+canvasStore.canvasId)
       .then(response => {
         let data = response.data[0]
-        console.log("got data")
         canvasStore.gridXX = data.width
         canvasStore.gridYY = data.height
         canvasStore.isPrivate = data.private
