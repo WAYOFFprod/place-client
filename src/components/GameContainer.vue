@@ -244,11 +244,12 @@ export default {
     draw (p5) {
       if(this.zoomStep < 1) {
         // console.log("zoomestep", this.zoomStep, this.sf)
-        this.sf = p5.lerp(this.sf, this.sfDrift, this.zoomStep)
+        let powStep = Math.pow(this.zoomStep, 2)
+        this.sf = p5.lerp(this.sf, this.sfDrift, powStep)
         this.screenOff.x = p5.lerp(this.screenOff.x, this.offDrift.x, this.zoomStep)
         this.screenOff.y = p5.lerp(this.screenOff.y, this.offDrift.y, this.zoomStep)
 
-        this.zoomStep += 0.1
+        this.zoomStep += 0.01
       }
       //drag canvas
       if(this.mouseDown) {
