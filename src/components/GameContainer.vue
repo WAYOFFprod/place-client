@@ -387,7 +387,6 @@ export default {
               this.pp(gridX, gridY, true)
             } else {
               this.sfDrift = 6
-              console.log(this.screenOffset.x)
               this.offDrift.x = this.center.x - (p5.mouseX - this.screenOffset.x) / this.sf
               this.offDrift.y = this.center.y - (p5.mouseY - this.screenOffset.y) / this.sf
               this.zoomStep = 0
