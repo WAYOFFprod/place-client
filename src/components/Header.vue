@@ -19,10 +19,14 @@
       <n-space>
         <n-switch v-if="sessionStore.isLoggedIn && isOnCanvas" size="large" v-model:value="canvasStore.isPainting">
           <template #checked-icon>
-            <n-icon :component="FormatColorFillSharp" />
+            <n-icon>
+              <format-color-fill-sharp />
+            </n-icon>
           </template>
           <template #unchecked-icon>
-            <n-icon :component="ColorizeFilled" />
+            <n-icon>
+              <colorize-filled />
+            </n-icon>
           </template>
         </n-switch>
         <n-color-picker
@@ -62,6 +66,8 @@ import FormatColorFillSharp from '@vicons/material/FormatColorFillSharp'
 export default {
   components: {
     ArrowBack,
+    ColorizeFilled,
+    FormatColorFillSharp,
     NSwitch,
     NPageHeader,
     NSpace,
@@ -76,8 +82,6 @@ export default {
   },
   data () {
     return {
-      ColorizeFilled,
-      FormatColorFillSharp,
       iconPath: process.env.BASE_URL + 'icon.png',
       sessionStore,
       UIStore,

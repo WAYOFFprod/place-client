@@ -41,6 +41,11 @@ export default {
       seconds: 0,
     }
   },
+  created() {
+    this.emitter.on('saveCopy', () => {
+      this.copyContent()
+    })
+  },
   unmounted() {
     scriptStore.isStarted = false
     scriptStore.isPaused = true

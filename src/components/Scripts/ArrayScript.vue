@@ -1,5 +1,21 @@
 <template>
   <n-tabs type="line" animated>
+    <n-tab-pane name="load and save" tab="Load & Save">
+      <n-space vertical>
+        <n-form-item label="select" path="select">
+          <n-select v-model:value="preset.value" :on-update:value="presetSelected" :options="preset.options" />
+        </n-form-item>
+      </n-space>
+      <n-space vertical>
+        <n-form-item label="Array" path="preset.label">
+          <n-input
+            v-model:value="preset.label"
+            placeholder="label"
+          />
+        </n-form-item>
+        <n-button @click="save">save</n-button>
+      </n-space>
+    </n-tab-pane>
     <n-tab-pane name="Array" tab="Array">
       <n-space vertical>
         <n-form-item label="Array" path="selectValue">
@@ -53,12 +69,16 @@
 </template>
 
 <script>
-import { NSpace, NColorPicker, NDynamicInput, NFormItem, NScrollbar, NTabs, NTabPane, NInput, NInputNumber } from 'naive-ui'
-import { canvasStore, UIStore, scriptStore, arraySS } from './../../store.js'
+import VueAxios from './../common/http-common'
+import { NSpace, NColorPicker, NDynamicInput, NFormItem, NScrollbar, NTabs, NTabPane, NInput, NInputNumber, NSelect, NButton} from 'naive-ui'
+import { canvasStore, UIStore, scriptStore, arraySS, sessionStore } from './../../store.js'
 import {useDialog} from 'naive-ui'
 
 export default {
+  mixins: [VueAxios],
   components: {
+    NButton,
+    NSelect,
     NSpace,
     NTabs,
     NTabPane,
@@ -73,18 +93,44 @@ export default {
     if(!arraySS.isLoaded) {
       arraySS.loadScriptData()
     }
+    this.HTTP
+      .get('preset/pixels')
+      .then(response => {
+        this.data = response.data
+        for (let i = 0; i < this.data.length; i++) {
+          const e = this.data[i];
+
+          this.preset.options.push({
+            label: e.label,
+            value: i+"",
+          })
+        }
+      })
+      .catch(error => {
+        let e = JSON.parse(error.request.response); 
+        console.log(e.code, e.message)
+      })
   },
   unmounted() {
     arraySS.saveScriptData()
   },
   data () {
     return {
+      sessionStore,
       canvasStore,
       scriptStore,
       UIStore,
       arraySS,
       dialogViewed: false,
       dialog: useDialog(),
+      preset: {
+        label: "",
+        value: 0,
+        options: [
+
+        ]
+      },
+      data: []
     }
   },
   methods: {
@@ -93,6 +139,11 @@ export default {
         id: arraySS.selectedColorList.length,
         color: ''
       };
+    },
+    presetSelected() {
+      let data = this.data[this.preset.value]
+      arraySS.pixelArray = JSON.parse(data.data)
+      arraySS.selectedColorList = JSON.parse(data.color_selection.data)
     },
     setup() {
       arraySS.colors = []
@@ -189,6 +240,24 @@ export default {
       }
       return true
     },
+    save() {
+      const bodyFormData = new FormData()
+      bodyFormData.append('p_label', this.preset.label)
+      bodyFormData.append('p_data', JSON.stringify(arraySS.pixelArray))
+      bodyFormData.append('p_is_private', 0)
+      bodyFormData.append('c_label', this.preset.label)
+      bodyFormData.append('c_data', JSON.stringify(arraySS.selectedColorList))
+      bodyFormData.append('c_is_private', 0)
+      this.HTTP
+        .post('preset/add', bodyFormData, { headers: {"Authorization" : 'Bearer ' + sessionStore.token} })
+        .then(response => {
+          console.log(response)
+        })
+        .catch(error => {
+          let e = JSON.parse(error.request.response); 
+          console.log(e.code, e.message)
+        })
+    },
   },
   computed: {
     colorList () {
@@ -201,7 +270,7 @@ export default {
         })
       }
       return colorSelect
-    }
+    },
   }
 }
 </script>

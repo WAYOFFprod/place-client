@@ -17,21 +17,29 @@
           <n-input-number v-model:value="copySS.bound.end.y" clearable />
         </n-form-item>
       </n-space>
+      <n-space>
+        <n-button @click="copy">copy</n-button>
+        <n-button @click="save">save</n-button>
+      </n-space>
     </n-tab-pane>
   </n-tabs>
 </template>
 
 <script>
-import { NSpace, NFormItem, NTabs, NTabPane, NInputNumber } from 'naive-ui'
-import { copySS } from './../../store.js'
+
+import VueAxios from './../common/http-common'
+import { NSpace, NFormItem, NTabs, NTabPane, NInputNumber, NButton } from 'naive-ui'
+import { copySS, arraySS, sessionStore } from './../../store.js'
 
 export default {
+  mixins: [VueAxios],
   components: {
     NTabs,
     NTabPane,
     NInputNumber,
     NFormItem, 
     NSpace,
+    NButton,
   },
   mounted() {
     if(!copySS.isLoaded) {
@@ -43,10 +51,33 @@ export default {
   },
   data() {
     return {
-      copySS
+      copySS,
+      arraySS,
+      sessionStore
     }
   },
   methods: {
+    copy() {
+      this.emitter.emit("saveCopy")
+    },
+    save() {
+      const bodyFormData = new FormData()
+      bodyFormData.append('p_label', "pixels 1")
+      bodyFormData.append('p_data', JSON.stringify(arraySS.pixelArray))
+      bodyFormData.append('p_is_private', 0)
+      bodyFormData.append('c_label', "color 1")
+      bodyFormData.append('c_data', JSON.stringify(arraySS.selectedColorList))
+      bodyFormData.append('c_is_private', 0)
+      this.HTTP
+        .post('preset/add', bodyFormData, { headers: {"Authorization" : 'Bearer ' + sessionStore.token} })
+        .then(response => {
+          console.log(response)
+        })
+        .catch(error => {
+          let e = JSON.parse(error.request.response); 
+          console.log(e.code, e.message)
+        })
+    },
     preview() {
       copySS.active = true
     },
