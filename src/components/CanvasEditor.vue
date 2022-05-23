@@ -51,6 +51,8 @@
 import { NModal, NForm, NInput, NFormItemGi, NButton, NGrid, NSwitch, NInputNumber, NSpace} from 'naive-ui';
 import VueAxios from './common/http-common';
 import { UIStore, sessionStore, canvasStore } from './../store.js'
+import { useDialog } from 'naive-ui'
+
 export default {
   mixins: [VueAxios],
   props: ['isOpen', 'isNew', 'id', 'width', 'height', 'script_allowed', 'manual_allowed', 'private', 'label'],
@@ -95,6 +97,7 @@ export default {
           trigger: ['input', 'blur']
         }
       },
+      dialog: useDialog(),
     }
   },
   methods: {
@@ -111,7 +114,6 @@ export default {
       })
     },
     save() {
-      console.log("triggered")
       if(this.isNew) {
         const bodyFormData = new FormData()
         bodyFormData.append('width', this.formValue.width)
@@ -126,8 +128,24 @@ export default {
             this.$emit("closeCanvas", response.data, true)
           })
           .catch(error => {
-            let e = JSON.parse(error.request.response); 
-            console.log(e.code, e.message)
+            let message = ''
+            let e = JSON.parse(error.request.response);
+            for (const key in e.error) {
+              for (let i = 0; i < e.error[key].length; i++) {
+                message += e.error[key][i] + "\n";
+              }
+            }
+            console.log(message);
+
+            // display error
+            this.dialog.error({
+              title: 'Error',
+              content: message,
+              positiveText: 'OK',
+              onPositiveClick: () => {
+                console.log('done')
+              }
+            })
           })
       } else {
         const bodyFormData = new FormData()
@@ -170,14 +188,14 @@ export default {
       if(value % 100 == 0) {
         return ''
       } else {
-        return 'it must be a multiple of 100'
+        return 'this value has to be between 0 and 1000, and a multiple of 100' 
       }
     },
     isWidthMult100() {
-      return this.formValue.width % 100 == 0
+      return this.formValue.width % 100 == 0 && this.formValue.width <= 1000
     },
     isHeightMult100() {
-      return this.formValue.height % 100 == 0
+      return this.formValue.height % 100 == 0 && this.formValue.height <= 1000
     }
   },
   computed: {
@@ -192,5 +210,7 @@ export default {
 </script>
 
 <style>
-
+.n-dialog__content {
+  white-space: pre-line;
+}
 </style>
