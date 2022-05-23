@@ -254,8 +254,24 @@ export default {
           console.log(response)
         })
         .catch(error => {
-          let e = JSON.parse(error.request.response); 
-          console.log(e.code, e.message)
+          let message = ''
+          let e = JSON.parse(error.request.response);
+          for (const key in e.error) {
+            for (let i = 0; i < e.error[key].length; i++) {
+              message += e.error[key][i] + "\n";
+            }
+          }
+          console.log(message);
+
+          // display error
+          this.dialog.error({
+            title: 'Error',
+            content: message,
+            positiveText: 'OK',
+            onPositiveClick: () => {
+              console.log('done')
+            }
+          })
         })
     },
   },

@@ -1,26 +1,32 @@
 <template>
   <n-tabs type="line" animated>
     <n-tab-pane name="position and offset" tab="Position & Offset">
-      <n-space vertical>
-        <n-form-item  label="Top Left corner X" path="start.x">
-          <n-input-number v-model:value="copySS.bound.start.x" clearable />
-        </n-form-item>
-        <n-form-item  label="Top Left corner Y" path="start.y">
-          <n-input-number v-model:value="copySS.bound.start.y" clearable />
-        </n-form-item>
-      </n-space>
-        <n-space vertical>
-        <n-form-item  label="Bottom Right X" path="end.x">
-          <n-input-number v-model:value="copySS.bound.end.x" clearable />
-        </n-form-item>
-        <n-form-item  label="Bottom Right Y" path="end.y">
-          <n-input-number v-model:value="copySS.bound.end.y" clearable />
-        </n-form-item>
-      </n-space>
-      <n-space>
-        <n-button @click="copy">copy</n-button>
-        <n-button @click="save">save</n-button>
-      </n-space>
+      <n-form
+          :label-width="80"
+          :model="copySS"
+          :rules="rules"
+        >
+        <n-space>
+          <n-form-item  label="Left" path="start.x">
+            <n-input-number v-model:value="copySS.bound.start.x" clearable />
+          </n-form-item>
+          <n-form-item  label="Right" path="end.x">
+            <n-input-number v-model:value="copySS.bound.end.x" clearable />
+          </n-form-item>
+        </n-space>
+        <n-space>
+          <n-form-item  label="Top" path="start.y">
+            <n-input-number v-model:value="copySS.bound.start.y" clearable />
+          </n-form-item>
+          <n-form-item  label="Bottom" path="end.y">
+            <n-input-number v-model:value="copySS.bound.end.y" clearable />
+          </n-form-item>
+        </n-space>
+        <n-space>
+          <n-button @click="copy">copy</n-button>
+          <n-button @click="save">save</n-button>
+        </n-space>
+      </n-form>
     </n-tab-pane>
   </n-tabs>
 </template>
@@ -28,7 +34,8 @@
 <script>
 
 import VueAxios from './../common/http-common'
-import { NSpace, NFormItem, NTabs, NTabPane, NInputNumber, NButton } from 'naive-ui'
+import { NSpace, NForm, NFormItem, NTabs, NTabPane, NInputNumber, NButton } from 'naive-ui'
+import { useDialog } from 'naive-ui'
 import { copySS, arraySS, sessionStore } from './../../store.js'
 
 export default {
@@ -37,6 +44,7 @@ export default {
     NTabs,
     NTabPane,
     NInputNumber,
+    NForm,
     NFormItem, 
     NSpace,
     NButton,
@@ -53,7 +61,34 @@ export default {
     return {
       copySS,
       arraySS,
-      sessionStore
+      sessionStore,
+      dialog: useDialog(),
+      rules: {
+        start: {
+          x: {
+            validator: this.isSmallerX,
+            message: "this value should be smaller than Right",
+            trigger: ['blue','input']
+          },
+          y: {
+            validator: this.isSmallerY,
+            message: "this value should be smaller than Bottom",
+            trigger: ['blue','input']
+          }
+        },
+        end: {
+          x: {
+            validator: this.isLargerX,
+            message: "this value should be larger than Left",
+            trigger: ['blue','input']
+          },
+          y: {
+            validator: this.isLargerY,
+            message: "this value should be larger than Top",
+            trigger: ['blue','input']
+          },
+        },
+      },
     }
   },
   methods: {
@@ -74,8 +109,23 @@ export default {
           console.log(response)
         })
         .catch(error => {
-          let e = JSON.parse(error.request.response); 
-          console.log(e.code, e.message)
+          let message = ''
+          let e = JSON.parse(error.request.response);
+          for (const key in e.error) {
+            for (let i = 0; i < e.error[key].length; i++) {
+              message += e.error[key][i] + "\n";
+            }
+          }
+
+          // display error
+          this.dialog.error({
+            title: 'Error',
+            content: message,
+            positiveText: 'OK',
+            onPositiveClick: () => {
+              console.log('done')
+            }
+          })
         })
     },
     preview() {
@@ -83,6 +133,18 @@ export default {
     },
     clear() {
       copySS.active = false
+    },
+    isLargerX() {
+      return copySS.bound.start.x < copySS.bound.end.x
+    },
+    isLargerY() {
+      return copySS.bound.start.y < copySS.bound.end.y
+    },
+    isSmallerX() {
+      return copySS.bound.start.x < copySS.bound.end.x
+    },
+    isSmallerY() {
+      return copySS.bound.start.y < copySS.bound.end.y
     }
   }
 }
