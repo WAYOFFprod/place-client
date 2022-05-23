@@ -5,6 +5,7 @@
       <vue-p5 ref="p5vue"
         class="center-block"
         :c="canvasClass"
+        :container="canvasName"
         @setup="setup" 
         @draw="draw"
         @loading="drawLoading"
@@ -84,6 +85,7 @@ export default {
       UIStore,
       copySS,
       arraySS,
+      canvasName: 'main-canvas',
       canvasClass: 'p5-main-canvas',
       gridSections: [],
       grab: {

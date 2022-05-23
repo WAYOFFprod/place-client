@@ -28,12 +28,18 @@
         </n-space>
       </n-form>
     </n-tab-pane>
+    <n-tab-pane name="preview" tab="Preview">
+      <n-space>
+        <copy-script-preview></copy-script-preview>
+      </n-space>
+    </n-tab-pane>
   </n-tabs>
 </template>
 
 <script>
 
 import VueAxios from './../common/http-common'
+import CopyScriptPreview from './CopyScriptPreview.vue'
 import { NSpace, NForm, NFormItem, NTabs, NTabPane, NInputNumber, NButton } from 'naive-ui'
 import { useDialog } from 'naive-ui'
 import { copySS, arraySS, sessionStore } from './../../store.js'
@@ -41,6 +47,7 @@ import { copySS, arraySS, sessionStore } from './../../store.js'
 export default {
   mixins: [VueAxios],
   components: {
+    CopyScriptPreview,
     NTabs,
     NTabPane,
     NInputNumber,

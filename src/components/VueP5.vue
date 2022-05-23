@@ -1,5 +1,5 @@
 <template>
-  <div id="p5-canvas" class="p5-canvas"></div>
+  <div :id="container" class="p5-canvas"></div>
 </template>
 
 <script>
@@ -8,7 +8,8 @@ import P5 from 'p5';
 export default {
   name: "vuep5",
   props: [
-    'c'
+    'c',
+    'container'
   ],
   data () {
     return {
@@ -22,7 +23,6 @@ export default {
   },
   methods: {
     loading() {
-      // console.log("loading")
       this.isLoading = true;
     },
     finishedLoading() {
@@ -41,7 +41,6 @@ export default {
         }     
         // NOTE: Draw is here
         p5.draw = () => { 
-          
           if(t.isLoading) {
             t.$emit('loading', p5);
           } else {
@@ -121,7 +120,7 @@ export default {
         });
       }
       // NOTE: Use p5 as an instance mode
-      new P5(script, 'p5-canvas')
+      new P5(script, this.container)
     }
   },
   unmounted() {
