@@ -48,7 +48,6 @@ export default {
       p5.scale(500 / l)
       p5.background(255)
       // draw  temp pixels
-      console.log(copySS.pixelArray.length)
       this.img.loadPixels();
       for (let y = 0; y <copySS.pixelArray.length; y++) {
         for (let x = 0; x < copySS.pixelArray[y].length; x++) {
