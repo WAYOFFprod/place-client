@@ -5,11 +5,16 @@
     :container="canvasName"
     :c="canvasClass"
   />
+  <n-button @click="shiftUp">Top</n-button>
+  <n-button @click="shiftLeft">Left</n-button>
+  <n-button @click="shiftRight">Right</n-button>
+  <n-button @click="shiftDown">Down</n-button>
 </template>
 
 <script>
 import VueP5 from './../VueP5.vue'
 import { copySS } from './../../store.js'
+import { NButton } from 'naive-ui'
 
 export default {
   props: [
@@ -17,6 +22,7 @@ export default {
   ],
   components: {
     VueP5,
+    NButton,
   },
   mounted() {
     this.emitter.emit('storePixel')
@@ -49,18 +55,40 @@ export default {
       p5.background(255)
       // draw  temp pixels
       this.img.loadPixels();
+      console
       for (let y = 0; y <copySS.pixelArray.length; y++) {
         for (let x = 0; x < copySS.pixelArray[y].length; x++) {
           const color = copySS.pixelArray[y][x];
           if(color) {
             this.img.set(x, y, [this.p5.red(color), this.p5.green(color), this.p5.blue(color), 255]);
+          } else {
+            this.img.set(x, y, [255, 255, 255, 255]);
           }
         }
       }
       this.img.updatePixels();
       this.p5.image(this.img, 0, 0)
     },
-    
+    shiftUp() {
+      copySS.bound.start.y -=1
+      copySS.bound.end.y -=1
+      this.emitter.emit('storePixel')
+    },
+    shiftDown() {
+      copySS.bound.start.y +=1
+      copySS.bound.end.y +=1
+      this.emitter.emit('storePixel')
+    },
+    shiftRight() {
+      copySS.bound.start.x +=1
+      copySS.bound.end.x +=1
+      this.emitter.emit('storePixel')
+    },
+    shiftLeft() {
+      copySS.bound.start.x -=1
+      copySS.bound.end.x -=1
+      this.emitter.emit('storePixel')
+    }
   },
   computed: {
 

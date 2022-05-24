@@ -22,10 +22,6 @@
             <n-input-number v-model:value="copySS.bound.end.y" clearable />
           </n-form-item>
         </n-space>
-        <n-space>
-          <n-button @click="copy">copy</n-button>
-          <n-button @click="save">save</n-button>
-        </n-space>
       </n-form>
     </n-tab-pane>
     <n-tab-pane name="preview" tab="Preview">
@@ -34,13 +30,16 @@
       </n-space>
     </n-tab-pane>
   </n-tabs>
+  <n-input v-model:value="copySS.bound.label"></n-input>
+  <n-button @click="copy">copy</n-button>
+  <n-button @click="save">save</n-button>
 </template>
 
 <script>
 
 import VueAxios from './../common/http-common'
 import CopyScriptPreview from './CopyScriptPreview.vue'
-import { NSpace, NForm, NFormItem, NTabs, NTabPane, NInputNumber, NButton } from 'naive-ui'
+import { NSpace, NForm, NFormItem, NTabs, NTabPane, NInputNumber, NButton, NInput } from 'naive-ui'
 import { useDialog } from 'naive-ui'
 import { copySS, arraySS, sessionStore } from './../../store.js'
 
@@ -48,6 +47,7 @@ export default {
   mixins: [VueAxios],
   components: {
     CopyScriptPreview,
+    NInput,
     NTabs,
     NTabPane,
     NInputNumber,
@@ -104,10 +104,10 @@ export default {
     },
     save() {
       const bodyFormData = new FormData()
-      bodyFormData.append('p_label', "pixels 1")
+      bodyFormData.append('p_label', copySS.bound.label)
       bodyFormData.append('p_data', JSON.stringify(arraySS.pixelArray))
       bodyFormData.append('p_is_private', 0)
-      bodyFormData.append('c_label', "color 1")
+      bodyFormData.append('c_label', copySS.bound.label)
       bodyFormData.append('c_data', JSON.stringify(arraySS.selectedColorList))
       bodyFormData.append('c_is_private', 0)
       this.HTTP

@@ -125,7 +125,7 @@ export default {
       dialog: useDialog(),
       preset: {
         label: "",
-        value: 0,
+        value: '',
         options: [
 
         ]
@@ -140,7 +140,8 @@ export default {
         color: ''
       };
     },
-    presetSelected() {
+    presetSelected(i) {
+      this.preset.value = i
       let data = this.data[this.preset.value]
       arraySS.pixelArray = JSON.parse(data.data)
       arraySS.selectedColorList = JSON.parse(data.color_selection.data)
