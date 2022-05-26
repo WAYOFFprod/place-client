@@ -19,7 +19,7 @@
 </template>
 
 <script>
-import { canvasStore, scriptStore, arraySS, copySS } from './../store.js'
+import { canvasStore, scriptStore, arraySS, copySS, previewStore } from './../store.js'
 import { NProgress, NIcon, NButton, NSpace} from 'naive-ui'
 import Play16Regular from '@vicons/fluent/Play16Regular'
 
@@ -38,13 +38,11 @@ export default {
       scriptStore,
       arraySS,
       copySS,
+      previewStore,
       seconds: 0,
     }
   },
   created() {
-    this.emitter.on('saveCopy', () => {
-      this.copyContent()
-    })
   },
   unmounted() {
     scriptStore.isStarted = false
@@ -68,66 +66,21 @@ export default {
           this.drawPreview()
           break;
         case 'copy':
-          this.copyContent()
           break;
         default:
           break;
       }
     },
-    async copyContent() {
-      this.emitter.emit("storePixel")
-      scriptStore.isStarted = false
-
-      arraySS.selectedColorList = []
-      arraySS.pixelArray = ""
-      for(let y = 0; y < copySS.pixelArray.length; y++) {
-        arraySS.pixelArray += "["
-        for (let x = 0; x < copySS.pixelArray[y].length; x++) {
-          let c = copySS.pixelArray[y][x]
-          let colorIndex = undefined
-          if(c == false) {
-            colorIndex = -1
-          }
-          
-          let existingColor = arraySS.selectedColorList.filter(e => e.color === c)
-          console.log(existingColor)
-          if(existingColor.length > 0){
-            colorIndex = existingColor[0].id
-          }
-
-          if(colorIndex === undefined) {
-            colorIndex = arraySS.selectedColorList.length
-            arraySS.selectedColorList.push({
-              id: colorIndex,
-              color: c
-            })
-          }
-          
-          arraySS.pixelArray += colorIndex
-          if(x < copySS.pixelArray[y].length - 1) {
-            arraySS.pixelArray += ","
-          }
-        }
-        arraySS.pixelArray += "]"
-        if(y < copySS.pixelArray.length - 1) {
-          arraySS.pixelArray += ",\n"
-        }
-      }
-      console.log(arraySS.pixelArray)
-      // save starting bound as offset
-      arraySS.start.x = copySS.bound.start.x
-      arraySS.start.y = copySS.bound.start.y
-    },
     async drawPreview() {
-      if(!arraySS.pixels) return
-      let size = arraySS.pixels.length * arraySS.pixels[0].length - (arraySS.offset.x + arraySS.offset.y + (arraySS.offset.x * arraySS.offset.y))
+      if(!previewStore.pixelArray) return
+      let size = previewStore.pixelArray.length * previewStore.pixelArray[0].length - (arraySS.offset.x + arraySS.offset.y + (arraySS.offset.x * arraySS.offset.y))
       let count = 0
-      for(let y = 0; y < arraySS.pixels.length; y++) {
+      for(let y = 0; y < previewStore.pixelArray.length; y++) {
         if(y < arraySS.offset.y) continue
-        for(let x = 0; x < arraySS.pixels[y].length; x++) {
+        for(let x = 0; x < previewStore.pixelArray[y].length; x++) {
           if(!scriptStore.isStarted) return // stop function
           if(x < arraySS.offset.x && y == arraySS.offset.y) continue
-          if(arraySS.pixels[y][x] < 0) continue
+          if(previewStore.pixelArray[y][x] < 0) continue
           count++
           while(scriptStore.isPaused) {
             await this.sleep(1000);
@@ -137,7 +90,7 @@ export default {
           arraySS.offset.y = y
           
           scriptStore.percentage = Math.round((count / size) * 100)
-          const c = arraySS.colors[arraySS.pixels[y][x]] // get hex string
+          const c = arraySS.colors[previewStore.pixelArray[y][x]] // get hex string
           const data = {
             x: arraySS.sp.x + x,
             y: arraySS.sp.y + y,

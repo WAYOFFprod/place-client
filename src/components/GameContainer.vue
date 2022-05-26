@@ -23,7 +23,7 @@
 <script>
 import VueP5 from './VueP5.vue'
 import ScriptDrawer from './ScriptDrawer.vue'
-import { canvasStore, sessionStore, UIStore, copySS, arraySS } from './../store.js'
+import { canvasStore, sessionStore, UIStore, copySS, arraySS, previewStore } from './../store.js'
 import VueAxios from './common/http-common'
 import GridSection from './common/GridSection'
 import CanvasPreview from './common/CanvasPreview'
@@ -84,6 +84,7 @@ export default {
       sessionStore,
       UIStore,
       copySS,
+      previewStore,
       arraySS,
       canvasName: 'main-canvas',
       canvasClass: 'p5-main-canvas',
@@ -294,7 +295,7 @@ export default {
           }
         }
       }
-      if(copySS.active) {
+      if(previewStore.active) {
         this.drawBounds(p5)
       }
 
@@ -563,20 +564,21 @@ export default {
       this.lastUpdate = new Date()
     },
     storePixel() {
+      console.log("storepixels", copySS.bound)
       const x = copySS.bound.start.x
       const y = copySS.bound.start.y
       const x2 = copySS.bound.end.x
       const y2 = copySS.bound.end.y
 
-      copySS.pixelArray = []
+      previewStore.pixelArray = []
       for(let iy = y; iy < y2; iy++) {
-        copySS.pixelArray[iy - y] = []
+        previewStore.pixelArray[iy - y] = []
         for(let ix = x; ix < x2; ix++) {
           const xSec = Math.floor(ix / canvasStore.ss)
           const ySec = Math.floor(iy / canvasStore.ss)
           let iSec = xSec + ((canvasStore.gridXX / canvasStore.ss) * ySec)
           const pi = ix + (canvasStore.gridXX * iy)
-          copySS.pixelArray[iy - y][ix - x] = this.gridSections[iSec].getPixel(pi)
+          previewStore.pixelArray[iy - y][ix - x] = this.gridSections[iSec].getPixel(pi)
         }
       }
     },

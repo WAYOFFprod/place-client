@@ -126,8 +126,24 @@ const scriptStore = reactive({
   isScriptRunning: false,
 })
 
-const copySS = reactive({
+const previewStore = reactive({
   active: false,
+  pixelArray: [],
+  pixelArrayStr: '[0,0,0,0,0],\n' +
+    "[0,0,1,0,0],\n" +
+    "[0,1,1,1,0],\n" +
+    "[0,0,1,0,0],\n" +
+    "[0,0,0,0,0]",
+  selectedColorList: [{
+    id: '0',
+    color: '#DA291C'
+  }, {
+    id: '1',
+    color: '#ffffff'
+  }],
+})
+
+const copySS = reactive({
   bound: {
     label: "",
     start: {
@@ -165,7 +181,7 @@ const copySS = reactive({
 })
 
 const arraySS = reactive({
-  pixelArray: '[0,0,0,0,0],\n' +
+  pixelArrayStr: '[0,0,0,0,0],\n' +
     "[0,0,1,0,0],\n" +
     "[0,1,1,1,0],\n" +
     "[0,0,1,0,0],\n" +
@@ -190,7 +206,6 @@ const arraySS = reactive({
     x: 0,
     y: 0
   },
-  pixels: [],
   isLoaded: false,
   saveScriptData() {
     localStorage.setItem('pixel_array', this.pixelArray)
@@ -247,4 +262,4 @@ const UIStore = reactive({
   }
 })
 
-export {canvasStore, sessionStore, scriptStore, UIStore, arraySS, copySS }
+export {canvasStore, sessionStore, scriptStore, UIStore, arraySS, copySS, previewStore }

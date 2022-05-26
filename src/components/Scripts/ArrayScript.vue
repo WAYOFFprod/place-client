@@ -20,9 +20,10 @@
       <n-space vertical>
         <n-form-item label="Array" path="selectValue">
           <n-input
-            v-model:value="arraySS.pixelArray"
+            v-model:value="arraySS.pixelArrayStr"
             type="textarea"
             placeholder="Basic Textarea"
+            @update:value="updateGrid"
           />
         </n-form-item>
       </n-space>
@@ -41,6 +42,7 @@
                 v-model:value="value.color"
                 :show-alpha="false"
                 :modes="['hex']"
+                @update:value="updateColor"
               />
             </template>
           </n-dynamic-input>
@@ -71,7 +73,7 @@
 <script>
 import VueAxios from './../common/http-common'
 import { NSpace, NColorPicker, NDynamicInput, NFormItem, NScrollbar, NTabs, NTabPane, NInput, NInputNumber, NSelect, NButton} from 'naive-ui'
-import { canvasStore, UIStore, scriptStore, arraySS, sessionStore } from './../../store.js'
+import { canvasStore, UIStore, scriptStore, arraySS, sessionStore, previewStore } from './../../store.js'
 import {useDialog} from 'naive-ui'
 
 export default {
@@ -143,8 +145,9 @@ export default {
     presetSelected(i) {
       this.preset.value = i
       let data = this.data[this.preset.value]
-      arraySS.pixelArray = JSON.parse(data.data)
+      arraySS.pixelArrayStr = data.data
       arraySS.selectedColorList = JSON.parse(data.color_selection.data)
+      this.$emit('update')
     },
     setup() {
       arraySS.colors = []
@@ -155,20 +158,27 @@ export default {
       arraySS.sp.x = arraySS.start.x
       arraySS.sp.y = arraySS.start.y
 
-      arraySS.pixels = this.parseJson("["+arraySS.pixelArray+"]")
+      previewStore.pixelArray = this.parseJson("["+arraySS.pixelArrayStr+"]")
       let ok = this.validate()
       if(ok) {
         arraySS.saveScriptData()
       }
     },
+    updateColor(){
+      this.$emit('update')
+    },
+    updateGrid(){
+      console.log("what")
+      this.$emit('update')
+    },
     preview() {
       this.setup()
-      for(let y = 0; y < arraySS.pixels.length; y++) {
+      for(let y = 0; y < previewStore.pixelArray.length; y++) {
         if(y < arraySS.offset.y) continue
-        for(let x = 0; x < arraySS.pixels[y].length; x++) {
+        for(let x = 0; x < previewStore.pixelArray[y].length; x++) {
           if(x < arraySS.offset.x && y == arraySS.offset.y) continue
-          if(arraySS.pixels[y][x] < 0) continue
-          const c = arraySS.colors[arraySS.pixels[y][x]] // get hex string
+          if(previewStore.pixelArray[y][x] < 0) continue
+          const c = arraySS.colors[previewStore.pixelArray[y][x]] // get hex string
           this.emitter.emit('addToPreview', {x: arraySS.sp.x + x, y: arraySS.sp.y + y, c: c})
         }
       }
@@ -177,11 +187,11 @@ export default {
     clear() {
       this.setup()
       this.dialogViewed = false
-      for(let y = 0; y < arraySS.pixels.length; y++) {
+      for(let y = 0; y < previewStore.pixelArray.length; y++) {
         if(y < arraySS.offset.y) continue
-        for(let x = 0; x < arraySS.pixels[y].length; x++) {
+        for(let x = 0; x < previewStore.pixelArray[y].length; x++) {
           if(x < arraySS.offset.x && y == arraySS.offset.y) continue
-          const c = arraySS.colors[arraySS.pixels[y][x]] // get hex string
+          const c = arraySS.colors[previewStore.pixelArray[y][x]] // get hex string
           this.emitter.emit('clearPreview', {x: arraySS.sp.x + x, y: arraySS.sp.y + y, c: c})
         }
       }
@@ -227,7 +237,7 @@ export default {
           })
           return false
         }
-        if(arraySS.sp.x + arraySS.pixels[0].length > 100000 || arraySS.sp.y + arraySS.pixels.length > 1000000) {
+        if(arraySS.sp.x + previewStore.pixelArray[0].length > 100000 || arraySS.sp.y + previewStore.pixelArray.length > 1000000) {
           this.dialog.error({
             title: 'Your drawing goes too far.',
             content: 'Can\'t have that!',
@@ -244,10 +254,10 @@ export default {
     save() {
       const bodyFormData = new FormData()
       bodyFormData.append('p_label', this.preset.label)
-      bodyFormData.append('p_data', JSON.stringify(arraySS.pixelArray))
+      bodyFormData.append('p_data', previewStore.pixelArrayStr)
       bodyFormData.append('p_is_private', 0)
       bodyFormData.append('c_label', this.preset.label)
-      bodyFormData.append('c_data', JSON.stringify(arraySS.selectedColorList))
+      bodyFormData.append('c_data', JSON.stringify(previewStore.selectedColorList))
       bodyFormData.append('c_is_private', 0)
       this.HTTP
         .post('preset/add', bodyFormData, { headers: {"Authorization" : 'Bearer ' + sessionStore.token} })
